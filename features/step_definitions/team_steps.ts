@@ -5,14 +5,18 @@ import { FileTeamRepository } from "../../src/teams/infrastructure/file-team.rep
 import { Team } from "../../src/teams/domain/team";
 import { PlayerUseCases } from "../../src/players/application/player.use-cases";
 import { FilePlayerRepository } from "../../src/players/infrastructure/file-player.repository";
+import { FileMatchRepository } from "../../src/matches/infrastructure/file-match.repository";
 import { Player } from "../../src/players/domain/player";
+import { v4 as uuid } from "uuid";
 import fs from "fs/promises";
 
 const TEAMS_FILE_PATH = "./data/teams.json";
 const PLAYERS_FILE_PATH = "./data/players.json";
+const MATCHES_FILE_PATH = "./data/matches.json";
 
 let teamUseCases: TeamUseCases;
 let playerUseCases: PlayerUseCases;
+let matchRepository: FileMatchRepository;
 let createdTeam: Team | null = null;
 let teamsList: Team[] = [];
 let players: Player[] = [];
@@ -34,16 +38,23 @@ Before(async function () {
       throw error;
     }
   }
+  try {
+    await fs.unlink(MATCHES_FILE_PATH);
+  } catch (error: any) {
+    if (error.code !== 'ENOENT') {
+      throw error;
+    }
+  }
 
   const teamRepository = new FileTeamRepository();
   const playerRepository = new FilePlayerRepository();
-  teamUseCases = new TeamUseCases(teamRepository, playerRepository);
+  matchRepository = new FileMatchRepository();
+  teamUseCases = new TeamUseCases(teamRepository, playerRepository, undefined, matchRepository);
   playerUseCases = new PlayerUseCases(playerRepository);
 
   createdTeam = null;
   teamsList = [];
   players = [];
-  updatedTeam = null;
   updatedTeam = null;
   lastError = null;
 });
@@ -62,7 +73,7 @@ When("I create a team named {string} with player {string}", async function (team
   if (!player) {
     throw new Error(`Player ${playerName} not found`);
   }
-  createdTeam = await teamUseCases.createTeam(teamName, [player.id]);
+  createdTeam = await teamUseCases.createTeam(teamName, [player.id], "tournament-id", "requester", "SUPER_ADMIN");
 });
 
 When("I try to create a team named {string} with player {string}", async function (teamName: string, playerName: string) {
@@ -71,7 +82,7 @@ When("I try to create a team named {string} with player {string}", async functio
     if (!player) {
       throw new Error(`Player not found`);
     }
-    createdTeam = await teamUseCases.createTeam(teamName, [player.id]);
+    createdTeam = await teamUseCases.createTeam(teamName, [player.id], "tournament-id", "requester", "SUPER_ADMIN");
   } catch (error: any) {
     lastError = error;
   }
@@ -80,7 +91,7 @@ When("I try to create a team named {string} with player {string}", async functio
 When("I try to update a non-existent team {string} to {string}", async function (teamName: string, newName: string) {
   try {
     // Attempt update with a random UUID since team doesn't exist
-    await teamUseCases.updateTeam("00000000-0000-0000-0000-000000000000", newName);
+    await teamUseCases.updateTeam("00000000-0000-0000-0000-000000000000", newName, "requester", "SUPER_ADMIN");
   } catch (error: any) {
     lastError = error;
   }
@@ -93,13 +104,40 @@ Then("I should receive a team error saying {string}", function (message: string)
 
 When("I update the team's name to {string}", async function (newName: string) {
   if (createdTeam) {
-    updatedTeam = await teamUseCases.updateTeam(createdTeam.id, newName);
+    updatedTeam = await teamUseCases.updateTeam(createdTeam.id, newName, "requester", "SUPER_ADMIN");
   }
 });
 
 When("I delete the team", async function () {
   if (createdTeam) {
-    await teamUseCases.deleteTeam(createdTeam.id);
+    await teamUseCases.deleteTeam(createdTeam.id, "requester", "SUPER_ADMIN");
+  }
+});
+
+Given("the team has an associated match", async function () {
+  if (!createdTeam) {
+    throw new Error("No team created");
+  }
+  await matchRepository.createMatch({
+    id: uuid(),
+    tournamentId: createdTeam.tournaments[0],
+    roundId: uuid(),
+    teamAId: createdTeam.id,
+    teamBId: uuid(),
+    date: new Date(),
+    status: "scheduled",
+    result: null,
+    incidents: [],
+  });
+});
+
+When("I try to delete the team", async function () {
+  try {
+    if (createdTeam) {
+      await teamUseCases.deleteTeam(createdTeam.id, "requester", "SUPER_ADMIN");
+    }
+  } catch (error: any) {
+    lastError = error;
   }
 });
 
@@ -136,7 +174,7 @@ When("I update the team named {string} to have player {string}", async function 
   if (!team || !player) {
     throw new Error("Team or player not found");
   }
-  await teamUseCases.updateTeam(team.id, team.name, [player.id]);
+  await teamUseCases.updateTeam(team.id, team.name, "requester", "SUPER_ADMIN", [player.id]);
 });
 
 Then("I should see a team named {string} without player {string}", async function (teamName: string, playerName: string) {

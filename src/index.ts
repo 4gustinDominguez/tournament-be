@@ -13,6 +13,7 @@ import standingsRoutes from "./standings/infrastructure/standings.routes";
 import fixtureRoutes from "./fixtures/infrastructure/fixture.routes";
 import authRoutes from "./auth/infrastructure/auth.routes";
 import scenarioRoutes from "./scenarios/infrastructure/generator.routes";
+import dashboardRoutes from "./dashboard/infrastructure/dashboard.routes";
 import { usingPostgres } from "./shared/infrastructure/repository.factory";
 import { getPool, initDatabase } from "./shared/infrastructure/db";
 
@@ -39,6 +40,7 @@ app.use("/referees", refereeRoutes);
 app.use(standingsRoutes);
 app.use(fixtureRoutes);
 app.use(scenarioRoutes);
+app.use(dashboardRoutes);
 app.use("/auth", authRoutes);
 
 app.get("/", (req: Request, res: Response) => {

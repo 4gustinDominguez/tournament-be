@@ -243,6 +243,10 @@ export class MatchUseCases {
       await this.tournamentUseCases.verifyTournamentOwnership(match.tournamentId, requesterId, requesterRole);
     }
 
+    if (match.status === "completed" || match.status === "live") {
+      throw new Error("Cannot delete a match that is live or has already been played");
+    }
+
     await this.matchRepository.deleteMatch(id);
   }
 }

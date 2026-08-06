@@ -11,7 +11,7 @@ const router = Router();
 
 const teamRepository = repositories.team;
 const playerRepository = repositories.player;
-export const teamUseCases = new TeamUseCases(teamRepository, playerRepository, tournamentUseCases);
+export const teamUseCases = new TeamUseCases(teamRepository, playerRepository, tournamentUseCases, repositories.match);
 const teamController = new TeamController(teamUseCases);
 
 // Public Routes

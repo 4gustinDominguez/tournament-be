@@ -17,5 +17,6 @@ router.get("/places", placeController.getAllPlaces.bind(placeController));
 
 // Protected Routes
 router.post("/places", isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), placeController.createPlace.bind(placeController));
+router.delete("/places/:id", isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), placeController.deletePlace.bind(placeController));
 
 export default router;

@@ -34,4 +34,21 @@ export class PlaceController {
             res.status(500).json({ message: "Error fetching places" });
         }
     }
+
+    async deletePlace(req: Request, res: Response): Promise<void> {
+        try {
+            const user = (req as any).user;
+            const { id } = req.params;
+            await this.placeUseCases.deletePlace(id, user.id, user.role);
+            res.status(204).send();
+        } catch (error: any) {
+            if (error.message.includes("Unauthorized")) {
+                res.status(403).json({ message: error.message });
+            } else if (error.message.includes("not found")) {
+                res.status(404).json({ message: error.message });
+            } else {
+                res.status(500).json({ message: "Error deleting place", error: error.message });
+            }
+        }
+    }
 }

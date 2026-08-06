@@ -41,4 +41,10 @@ export class FileRoundRepository implements RoundRepository {
         const rounds = await this.readDb();
         return rounds.find((round) => round.id === id) || null;
     }
+
+    async deleteRound(id: string): Promise<void> {
+        const rounds = await this.readDb();
+        const filteredRounds = rounds.filter((round) => round.id !== id);
+        await this.writeDb(filteredRounds);
+    }
 }

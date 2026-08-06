@@ -31,4 +31,17 @@ export class PlaceUseCases {
         }
         return places;
     }
+
+    async deletePlace(id: string, requesterId: string, requesterRole: string): Promise<void> {
+        const place = await this.placeRepository.findById(id);
+        if (!place) {
+            throw new Error("Place not found");
+        }
+
+        if (this.tournamentUseCases) {
+            await this.tournamentUseCases.verifyTournamentOwnership(place.tournamentId, requesterId, requesterRole);
+        }
+
+        await this.placeRepository.deleteById(id);
+    }
 }

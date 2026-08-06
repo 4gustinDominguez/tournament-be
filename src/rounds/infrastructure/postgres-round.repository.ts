@@ -40,4 +40,8 @@ export class PostgresRoundRepository implements RoundRepository {
     );
     return rows[0] ? toRound(rows[0]) : null;
   }
+
+  async deleteRound(id: string): Promise<void> {
+    await this.pool.query("DELETE FROM rounds WHERE id = $1", [id]);
+  }
 }

@@ -32,4 +32,15 @@ export class AuthController {
             res.status(404).json({ message: error.message });
         }
     }
+
+    async updateProfile(req: Request, res: Response): Promise<void> {
+        try {
+            const userId = (req as any).user.id;
+            const { firstName, lastName, currentPassword, newPassword } = req.body;
+            const user = await this.authUseCases.updateProfile(userId, { firstName, lastName, currentPassword, newPassword });
+            res.status(200).json(user);
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
 }

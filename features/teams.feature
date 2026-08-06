@@ -20,6 +20,14 @@ Feature: Teams
     And I delete the team
     Then I should not see a team named "The A-Team"
 
+  Scenario: Prevent deleting a team with matches
+    Given there are no teams
+    And there is a player named "John Doe" with nickname "Johnny"
+    When I create a team named "The A-Team" with player "John Doe"
+    And the team has an associated match
+    And I try to delete the team
+    Then I should receive a team error saying "Cannot delete team with existing matches"
+
   Scenario: Prevent creating team with non-existent player
     Given there are no teams
     When I try to create a team named "Ghost Team" with player "Ghost Player"

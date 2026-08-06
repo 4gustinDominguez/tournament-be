@@ -69,12 +69,13 @@ Before(async function () {
 });
 
 Given("a tournament {string} exists", async function (name: string) {
-  const tournament = await tournamentUseCases.createTournament(name, new Date(), new Date());
+  const tournament = await tournamentUseCases.createTournament(name, new Date(), new Date(), "owner-id");
   tournaments.push(tournament);
 });
 
 Given("a team {string} exists", async function (name: string) {
-  const team = await teamUseCases.createTeam(name, []);
+  const tournamentId = tournaments[0]?.id || "tournament-id";
+  const team = await teamUseCases.createTeam(name, [], tournamentId, "requester", "SUPER_ADMIN");
   if (team) {
     teams.push(team);
   }
@@ -100,7 +101,7 @@ Given("a match exists between {string} and {string} in tournament {string}", asy
     endDate: new Date()
   });
 
-  createdMatch = await matchUseCases.createMatch(roundId, teamA.id, teamB.id, new Date());
+  createdMatch = await matchUseCases.createMatch(roundId, teamA.id, teamB.id, new Date(), "requester", "SUPER_ADMIN");
 });
 
 Given("there are no matches", async function () {
@@ -114,7 +115,7 @@ When("I add the result {int}-{int} to the match", async function (scoreA: number
     throw new Error("No match created");
   }
   const result: MatchResult = { scoreA, scoreB };
-  updatedMatch = await matchUseCases.addResultToMatch(createdMatch.id, result);
+  updatedMatch = await matchUseCases.addResultToMatch(createdMatch.id, result, "requester", "SUPER_ADMIN");
 });
 
 When("I try to add the result {int} to {int} to the match", async function (scoreA: number, scoreB: number) {
@@ -123,7 +124,7 @@ When("I try to add the result {int} to {int} to the match", async function (scor
       throw new Error("No match created");
     }
     const result: MatchResult = { scoreA, scoreB };
-    await matchUseCases.addResultToMatch(createdMatch.id, result);
+    await matchUseCases.addResultToMatch(createdMatch.id, result, "requester", "SUPER_ADMIN");
   } catch (error: any) {
     lastError = error;
   }
@@ -132,7 +133,7 @@ When("I try to add the result {int} to {int} to the match", async function (scor
 When("I try to add result {int}-{int} to a non-existent match", async function (scoreA: number, scoreB: number) {
   try {
     const result: MatchResult = { scoreA, scoreB };
-    await matchUseCases.addResultToMatch("00000000-0000-0000-0000-000000000000", result);
+    await matchUseCases.addResultToMatch("00000000-0000-0000-0000-000000000000", result, "requester", "SUPER_ADMIN");
   } catch (error: any) {
     lastError = error;
   }
@@ -157,7 +158,7 @@ When("I update the match between {string} and {string} to be on {string}", async
 
   if (!match || !teamA || !teamB) throw new Error("Match or teams not found");
 
-  await matchUseCases.updateMatch(match.id, teamA.id, teamB.id, new Date(date));
+  await matchUseCases.updateMatch(match.id, "requester", "SUPER_ADMIN", teamA.id, teamB.id, new Date(date));
 });
 
 Then("I should see the match between {string} and {string} on {string}", async function (teamAName: string, teamBName: string, date: string) {
@@ -178,7 +179,37 @@ When("I delete the match between {string} and {string}", async function (teamANa
 
   if (!match) throw new Error("Match not found");
 
-  await matchUseCases.deleteMatch(match.id);
+  await matchUseCases.deleteMatch(match.id, "requester", "SUPER_ADMIN");
+});
+
+When("the match is completed", async function () {
+  if (!createdMatch) throw new Error("No match created");
+  updatedMatch = await matchUseCases.updateMatch(
+    createdMatch.id,
+    "requester",
+    "SUPER_ADMIN",
+    createdMatch.teamAId,
+    createdMatch.teamBId,
+    createdMatch.date,
+    undefined,
+    undefined,
+    "completed"
+  );
+});
+
+When("I try to delete the match between {string} and {string}", async function (teamAName: string, teamBName: string) {
+  const teamA = teams.find(t => t.name === teamAName);
+  const teamB = teams.find(t => t.name === teamBName);
+  const allMatches = await matchUseCases.getMatchesByTournament(tournaments[0].id);
+  const match = allMatches.find(m => m.teamAId === teamA?.id && m.teamBId === teamB?.id);
+
+  if (!match) throw new Error("Match not found");
+
+  try {
+    await matchUseCases.deleteMatch(match.id, "requester", "SUPER_ADMIN");
+  } catch (error: any) {
+    lastError = error;
+  }
 });
 
 Then("I should not see a match between {string} and {string} in tournament {string}", async function (teamAName: string, teamBName: string, tournamentName: string) {

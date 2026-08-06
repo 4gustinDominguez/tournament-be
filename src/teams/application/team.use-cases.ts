@@ -1,6 +1,7 @@
 import { Team } from "../domain/team";
 import { TeamRepository } from "../domain/team.repository";
 import { PlayerRepository } from "../../players/domain/player.repository";
+import { MatchRepository } from "../../matches/domain/match.repository";
 import { v4 as uuidv4 } from "uuid";
 import { TournamentUseCases } from "../../tournaments/application/tournament.use-cases";
 
@@ -8,7 +9,8 @@ export class TeamUseCases {
   constructor(
     private readonly teamRepository: TeamRepository,
     private readonly playerRepository: PlayerRepository,
-    private readonly tournamentUseCases?: TournamentUseCases
+    private readonly tournamentUseCases?: TournamentUseCases,
+    private readonly matchRepository?: MatchRepository
   ) { }
 
   async getAllTeams(tournamentId?: string): Promise<Team[]> {
@@ -137,6 +139,17 @@ export class TeamUseCases {
     if (this.tournamentUseCases && team.tournaments.length > 0) {
       const tournamentId = team.tournaments[0];
       await this.tournamentUseCases.verifyTournamentOwnership(tournamentId, requesterId, requesterRole);
+    }
+
+    if (this.matchRepository && team.tournaments.length > 0) {
+      const tournamentId = team.tournaments[0];
+      const matches = await this.matchRepository.getMatchesByTournament(tournamentId);
+      const hasMatches = matches.some(
+        (match) => match.teamAId === id || match.teamBId === id
+      );
+      if (hasMatches) {
+        throw new Error("Cannot delete team with existing matches");
+      }
     }
 
     await this.teamRepository.deleteById(id);

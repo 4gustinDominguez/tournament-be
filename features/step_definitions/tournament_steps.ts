@@ -31,7 +31,7 @@ When("I create a tournament named {string}", async function (name: string) {
   const startDate = new Date();
   const endDate = new Date();
   endDate.setDate(startDate.getDate() + 7);
-  createdTournament = await tournamentUseCases.createTournament(name, startDate, endDate);
+  createdTournament = await tournamentUseCases.createTournament(name, startDate, endDate, "owner-id");
 });
 
 When("I get the tournament by its ID", async function () {
@@ -44,7 +44,7 @@ When("I try to create a tournament named {string} with start date {string} and e
   try {
     const startDate = new Date(startStr);
     const endDate = new Date(endStr);
-    createdTournament = await tournamentUseCases.createTournament(name, startDate, endDate);
+    createdTournament = await tournamentUseCases.createTournament(name, startDate, endDate, "owner-id");
   } catch (error: any) {
     lastError = error;
   }
@@ -77,7 +77,7 @@ When("I update the tournament named {string} to {string}", async function (oldNa
   const startDate = new Date();
   const endDate = new Date();
   endDate.setDate(startDate.getDate() + 7);
-  await tournamentUseCases.updateTournament(tournament.id, newName, startDate, endDate);
+  await tournamentUseCases.updateTournament(tournament.id, newName, startDate, endDate, "requester", "SUPER_ADMIN");
 });
 
 When("I delete the tournament named {string}", async function (name: string) {
@@ -86,7 +86,7 @@ When("I delete the tournament named {string}", async function (name: string) {
   if (!tournament) {
     throw new Error(`Tournament ${name} not found`);
   }
-  await tournamentUseCases.deleteTournament(tournament.id);
+  await tournamentUseCases.deleteTournament(tournament.id, "requester", "SUPER_ADMIN");
 });
 
 Then("the tournament name should be {string}", function (name: string) {

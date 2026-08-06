@@ -69,7 +69,7 @@ When("I update the player named {string} to have name {string} and nickname {str
   if (!player) {
     throw new Error(`Player ${currentName} not found`);
   }
-  await playerUseCases.updatePlayer(player.id, newName, newNickname);
+  await playerUseCases.updatePlayer(player.id, { name: newName, nickname: newNickname });
 });
 
 Then("I should not see a player named {string}", async function (name: string) {
@@ -89,7 +89,7 @@ When("I delete the player named {string}", async function (name: string) {
 
 When("I try to update a non-existent player {string}", async function (name: string) {
   try {
-    await playerUseCases.updatePlayer("00000000-0000-0000-0000-000000000000", name, "Unknown");
+    await playerUseCases.updatePlayer("00000000-0000-0000-0000-000000000000", { name, nickname: "Unknown" });
   } catch (error: any) {
     lastError = error;
   }

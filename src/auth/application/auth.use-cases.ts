@@ -93,4 +93,42 @@ export class AuthUseCases {
         const { passwordHash: _, ...userWithoutPassword } = user;
         return userWithoutPassword;
     }
+
+    async updateProfile(
+        userId: string,
+        data: {
+            firstName?: string;
+            lastName?: string;
+            currentPassword?: string;
+            newPassword?: string;
+        }
+    ): Promise<Omit<User, "passwordHash">> {
+        const user = await this.userRepository.findById(userId);
+        if (!user) {
+            throw new Error("User not found");
+        }
+
+        if (data.firstName !== undefined) {
+            user.firstName = data.firstName;
+        }
+        if (data.lastName !== undefined) {
+            user.lastName = data.lastName;
+        }
+
+        if (data.newPassword) {
+            if (!data.currentPassword) {
+                throw new Error("Current password is required");
+            }
+            const isMatch = await bcrypt.compare(data.currentPassword, user.passwordHash);
+            if (!isMatch) {
+                throw new Error("Current password is incorrect");
+            }
+            user.passwordHash = await bcrypt.hash(data.newPassword, 10);
+        }
+
+        await this.userRepository.update(user);
+
+        const { passwordHash: _, ...userWithoutPassword } = user;
+        return userWithoutPassword;
+    }
 }

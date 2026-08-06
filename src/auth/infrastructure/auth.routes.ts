@@ -23,5 +23,6 @@ const authController = new AuthController(authUseCases);
 router.post("/register", authController.register.bind(authController));
 router.post("/login", authController.login.bind(authController));
 router.get("/me", isAuthenticated, authController.me.bind(authController));
+router.patch("/profile", isAuthenticated, authController.updateProfile.bind(authController));
 
 export default router;
