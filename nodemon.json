@@ -1,0 +1,11 @@
+{
+  "ignore": [
+    "data/*",
+    "data/"
+  ],
+  "watch": [
+    "src"
+  ],
+  "ext": "ts",
+  "delay": 3000
+}
