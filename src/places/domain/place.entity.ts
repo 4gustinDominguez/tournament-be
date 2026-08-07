@@ -1,9 +1,9 @@
 export class Place {
-    constructor(
-        public readonly id: string,
-        public readonly name: string,
-        public readonly tournamentId: string,
-        public readonly location?: string,
-        public readonly capacity?: number
-    ) { }
+	constructor(
+		public readonly id: string,
+		public readonly name: string,
+		public readonly tournamentId: string,
+		public readonly location?: string,
+		public readonly capacity?: number,
+	) {}
 }

@@ -1,10 +1,11 @@
-import { Router } from 'express';
-import { RoundController } from './round.controller';
-import { RoundUseCases } from '../application/round.use-cases';
-import { repositories } from '../../shared/infrastructure/repository.factory';
-import { isAuthenticated, hasRole } from '../../auth/infrastructure/auth.middleware';
-import { UserRole } from '../../auth/domain/user';
-import { tournamentUseCases } from '../../tournaments/infrastructure/tournament.routes';
+import { Router } from "express";
+
+import { UserRole } from "../../auth/domain/user";
+import { hasRole, isAuthenticated } from "../../auth/infrastructure/auth.middleware";
+import { repositories } from "../../shared/infrastructure/repository.factory";
+import { tournamentUseCases } from "../../tournaments/infrastructure/tournament.routes";
+import { RoundUseCases } from "../application/round.use-cases";
+import { RoundController } from "./round.controller";
 
 const router = Router();
 
@@ -18,8 +19,21 @@ const roundUseCases = new RoundUseCases(roundRepository, tournamentUseCases, rep
 const roundController = new RoundController(roundUseCases);
 
 // Routes
-router.post('/tournaments/:tournamentId/rounds', isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), roundController.createRound.bind(roundController));
-router.get('/tournaments/:tournamentId/rounds', roundController.getRoundsByTournament.bind(roundController));
-router.delete('/rounds/:id', isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), roundController.deleteRound.bind(roundController));
+router.post(
+	"/tournaments/:tournamentId/rounds",
+	isAuthenticated,
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	roundController.createRound.bind(roundController),
+);
+router.get(
+	"/tournaments/:tournamentId/rounds",
+	roundController.getRoundsByTournament.bind(roundController),
+);
+router.delete(
+	"/rounds/:id",
+	isAuthenticated,
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	roundController.deleteRound.bind(roundController),
+);
 
 export default router;

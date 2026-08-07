@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { AuthController } from "./auth.controller";
-import { AuthUseCases } from "../application/auth.use-cases";
-import { repositories } from "../../shared/infrastructure/repository.factory";
-import { isAuthenticated } from "./auth.middleware";
+
 import { RefereeUseCases } from "../../referees/application/referee.use-cases";
+import { repositories } from "../../shared/infrastructure/repository.factory";
 import { tournamentUseCases } from "../../tournaments/infrastructure/tournament.routes";
+import { AuthUseCases } from "../application/auth.use-cases";
+import { AuthController } from "./auth.controller";
+import { isAuthenticated } from "./auth.middleware";
 
 const router = Router();
 

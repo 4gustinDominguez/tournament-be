@@ -1,62 +1,63 @@
 import { Request, Response } from "express";
-import { RoundUseCases } from "../application/round.use-cases";
-import { createRoundSchema } from "../domain/round.validator";
 import { ZodError } from "zod";
 
+import { RoundUseCases } from "../application/round.use-cases";
+import { createRoundSchema } from "../domain/round.validator";
+
 export class RoundController {
-    constructor(private readonly roundUseCases: RoundUseCases) { }
+	constructor(private readonly roundUseCases: RoundUseCases) {}
 
-    async createRound(req: Request, res: Response): Promise<void> {
-        try {
-            const user = (req as any).user;
-            const { tournamentId } = req.params;
-            const { name, startDate, endDate } = createRoundSchema.parse(req.body);
+	async createRound(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as any).user;
+			const { tournamentId } = req.params;
+			const { name, startDate, endDate } = createRoundSchema.parse(req.body);
 
-            const newRound = await this.roundUseCases.createRound(
-                tournamentId,
-                name,
-                user.id,
-                user.role,
-                startDate ? new Date(startDate) : undefined,
-                endDate ? new Date(endDate) : undefined
-            );
+			const newRound = await this.roundUseCases.createRound(
+				tournamentId,
+				name,
+				user.id,
+				user.role,
+				startDate ? new Date(startDate) : undefined,
+				endDate ? new Date(endDate) : undefined,
+			);
 
-            res.status(201).json(newRound);
-        } catch (error: any) {
-            if (error instanceof ZodError) {
-                res.status(400).json({ message: "Validation error", errors: error });
-            } else if (error.message.includes("Unauthorized")) {
-                res.status(403).json({ message: error.message });
-            } else {
-                res.status(500).json({ message: error.message });
-            }
-        }
-    }
+			res.status(201).json(newRound);
+		} catch (error: any) {
+			if (error instanceof ZodError) {
+				res.status(400).json({ message: "Validation error", errors: error });
+			} else if (error.message.includes("Unauthorized")) {
+				res.status(403).json({ message: error.message });
+			} else {
+				res.status(500).json({ message: error.message });
+			}
+		}
+	}
 
-    async getRoundsByTournament(req: Request, res: Response): Promise<void> {
-        try {
-            const { tournamentId } = req.params;
-            const rounds = await this.roundUseCases.getRoundsByTournament(tournamentId);
-            res.json(rounds);
-        } catch (error) {
-            res.status(500).json({ message: "Error fetching rounds" });
-        }
-    }
+	async getRoundsByTournament(req: Request, res: Response): Promise<void> {
+		try {
+			const { tournamentId } = req.params;
+			const rounds = await this.roundUseCases.getRoundsByTournament(tournamentId);
+			res.json(rounds);
+		} catch (_error) {
+			res.status(500).json({ message: "Error fetching rounds" });
+		}
+	}
 
-    async deleteRound(req: Request, res: Response): Promise<void> {
-        try {
-            const user = (req as any).user;
-            const { id } = req.params;
-            await this.roundUseCases.deleteRound(id, user.id, user.role);
-            res.status(204).send();
-        } catch (error: any) {
-            if (error.message.includes("Unauthorized")) {
-                res.status(403).json({ message: error.message });
-            } else if (error.message.includes("not found")) {
-                res.status(404).json({ message: error.message });
-            } else {
-                res.status(400).json({ message: error.message });
-            }
-        }
-    }
+	async deleteRound(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as any).user;
+			const { id } = req.params;
+			await this.roundUseCases.deleteRound(id, user.id, user.role);
+			res.status(204).send();
+		} catch (error: any) {
+			if (error.message.includes("Unauthorized")) {
+				res.status(403).json({ message: error.message });
+			} else if (error.message.includes("not found")) {
+				res.status(404).json({ message: error.message });
+			} else {
+				res.status(400).json({ message: error.message });
+			}
+		}
+	}
 }

@@ -1,54 +1,60 @@
 import { Request, Response } from "express";
-import { PlaceUseCases } from "../application/place.use-cases";
-import { createPlaceSchema } from "../domain/place.validator";
 import { ZodError } from "zod";
 
+import { PlaceUseCases } from "../application/place.use-cases";
+import { createPlaceSchema } from "../domain/place.validator";
+
 export class PlaceController {
-    constructor(private readonly placeUseCases: PlaceUseCases) { }
+	constructor(private readonly placeUseCases: PlaceUseCases) {}
 
-    async createPlace(req: Request, res: Response): Promise<void> {
-        try {
-            const user = (req as any).user;
-            const { name, tournamentId, location, capacity } = createPlaceSchema.parse(req.body);
-            const newPlace = await this.placeUseCases.createPlace(name, tournamentId, user.id, user.role, location, capacity);
-            res.status(201).json(newPlace);
-        } catch (error: any) {
-            if (error instanceof ZodError) {
-                res.status(400).json({ message: "Validation error", errors: error });
-            } else if (error.message.includes("Unauthorized")) {
-                res.status(403).json({ message: error.message });
-            } else {
-                res
-                    .status(500)
-                    .json({ message: "Error creating place", error: error.message });
-            }
-        }
-    }
+	async createPlace(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as any).user;
+			const { name, tournamentId, location, capacity } = createPlaceSchema.parse(req.body);
+			const newPlace = await this.placeUseCases.createPlace(
+				name,
+				tournamentId,
+				user.id,
+				user.role,
+				location,
+				capacity,
+			);
+			res.status(201).json(newPlace);
+		} catch (error: any) {
+			if (error instanceof ZodError) {
+				res.status(400).json({ message: "Validation error", errors: error });
+			} else if (error.message.includes("Unauthorized")) {
+				res.status(403).json({ message: error.message });
+			} else {
+				res.status(500).json({ message: "Error creating place", error: error.message });
+			}
+		}
+	}
 
-    async getAllPlaces(req: Request, res: Response): Promise<void> {
-        try {
-            const { tournamentId } = req.query;
-            const places = await this.placeUseCases.getAllPlaces(tournamentId as string);
-            res.json(places);
-        } catch (error) {
-            res.status(500).json({ message: "Error fetching places" });
-        }
-    }
+	async getAllPlaces(req: Request, res: Response): Promise<void> {
+		try {
+			const { tournamentId } = req.query;
+			const places = await this.placeUseCases.getAllPlaces(tournamentId as string);
+			res.json(places);
+		} catch (_error) {
+			res.status(500).json({ message: "Error fetching places" });
+		}
+	}
 
-    async deletePlace(req: Request, res: Response): Promise<void> {
-        try {
-            const user = (req as any).user;
-            const { id } = req.params;
-            await this.placeUseCases.deletePlace(id, user.id, user.role);
-            res.status(204).send();
-        } catch (error: any) {
-            if (error.message.includes("Unauthorized")) {
-                res.status(403).json({ message: error.message });
-            } else if (error.message.includes("not found")) {
-                res.status(404).json({ message: error.message });
-            } else {
-                res.status(500).json({ message: "Error deleting place", error: error.message });
-            }
-        }
-    }
+	async deletePlace(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as any).user;
+			const { id } = req.params;
+			await this.placeUseCases.deletePlace(id, user.id, user.role);
+			res.status(204).send();
+		} catch (error: any) {
+			if (error.message.includes("Unauthorized")) {
+				res.status(403).json({ message: error.message });
+			} else if (error.message.includes("not found")) {
+				res.status(404).json({ message: error.message });
+			} else {
+				res.status(500).json({ message: "Error deleting place", error: error.message });
+			}
+		}
+	}
 }

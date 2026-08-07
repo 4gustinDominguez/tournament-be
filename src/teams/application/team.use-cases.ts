@@ -1,157 +1,192 @@
+import { v4 as uuidv4 } from "uuid";
+
+import { MatchRepository } from "../../matches/domain/match.repository";
+import { PlayerRepository } from "../../players/domain/player.repository";
+import { TournamentUseCases } from "../../tournaments/application/tournament.use-cases";
 import { Team } from "../domain/team";
 import { TeamRepository } from "../domain/team.repository";
-import { PlayerRepository } from "../../players/domain/player.repository";
-import { MatchRepository } from "../../matches/domain/match.repository";
-import { v4 as uuidv4 } from "uuid";
-import { TournamentUseCases } from "../../tournaments/application/tournament.use-cases";
 
 export class TeamUseCases {
-  constructor(
-    private readonly teamRepository: TeamRepository,
-    private readonly playerRepository: PlayerRepository,
-    private readonly tournamentUseCases?: TournamentUseCases,
-    private readonly matchRepository?: MatchRepository
-  ) { }
+	constructor(
+		private readonly teamRepository: TeamRepository,
+		private readonly playerRepository: PlayerRepository,
+		private readonly tournamentUseCases?: TournamentUseCases,
+		private readonly matchRepository?: MatchRepository,
+	) {}
 
-  async getAllTeams(tournamentId?: string): Promise<Team[]> {
-    let teams = await this.teamRepository.getAll();
+	async getAllTeams(tournamentId?: string): Promise<Team[]> {
+		let teams = await this.teamRepository.getAll();
 
-    if (tournamentId) {
-      teams = teams.filter((t) => t.tournaments.includes(tournamentId));
-    }
+		if (tournamentId) {
+			teams = teams.filter((t) => t.tournaments.includes(tournamentId));
+		}
 
-    // Populate players for each team
-    const populatedTeams = await Promise.all(
-      teams.map(async (team) => {
-        const players = await Promise.all(
-          team.playerIds.map((id) => this.playerRepository.findById(id))
-        );
-        return {
-          ...team,
-          player: players.filter((p): p is any => p !== null), // Use player property as expected by FE
-        };
-      })
-    );
+		// Populate players for each team
+		const populatedTeams = await Promise.all(
+			teams.map(async (team) => {
+				const players = await Promise.all(
+					team.playerIds.map((id) => this.playerRepository.findById(id)),
+				);
 
-    return populatedTeams;
-  }
+				return {
+					...team,
+					player: players.filter((p): p is any => p !== null), // Use player property as expected by FE
+				};
+			}),
+		);
 
-  async createTeam(name: string, playerIds: string[], tournamentId: string, requesterId: string, requesterRole: string, placeId?: string, coach?: string, crestUrl?: string, kitColor?: string): Promise<Team | null> {
-    if (this.tournamentUseCases) {
-      await this.tournamentUseCases.verifyTournamentOwnership(tournamentId, requesterId, requesterRole);
-    }
+		return populatedTeams;
+	}
 
-    for (const playerId of playerIds) {
-      const player = await this.playerRepository.findById(playerId);
-      if (!player) {
-        throw new Error("Player not found");
-      }
-    }
+	async createTeam(
+		name: string,
+		playerIds: string[],
+		tournamentId: string,
+		requesterId: string,
+		requesterRole: string,
+		placeId?: string,
+		coach?: string,
+		crestUrl?: string,
+		kitColor?: string,
+	): Promise<Team | null> {
+		if (this.tournamentUseCases) {
+			await this.tournamentUseCases.verifyTournamentOwnership(
+				tournamentId,
+				requesterId,
+				requesterRole,
+			);
+		}
 
-    const newTeam: Team = {
-      id: uuidv4(),
-      name,
-      playerIds,
-      tournaments: [tournamentId],
-      placeId,
-      coach,
-      crestUrl,
-      kitColor,
-    };
-    await this.teamRepository.save(newTeam);
+		for (const playerId of playerIds) {
+			const player = await this.playerRepository.findById(playerId);
+			if (!player) {
+				throw new Error("Player not found");
+			}
+		}
 
-    if (this.tournamentUseCases) {
-      await this.tournamentUseCases.addTeam(tournamentId, newTeam.id);
-    }
+		const newTeam: Team = {
+			id: uuidv4(),
+			name,
+			playerIds,
+			tournaments: [tournamentId],
+			placeId,
+			coach,
+			crestUrl,
+			kitColor,
+		};
+		await this.teamRepository.save(newTeam);
 
-    return newTeam;
-  }
+		if (this.tournamentUseCases) {
+			await this.tournamentUseCases.addTeam(tournamentId, newTeam.id);
+		}
 
-  async getTeamById(id: string): Promise<Team | null> {
-    const team = await this.teamRepository.findById(id);
-    if (!team) return null;
+		return newTeam;
+	}
 
-    const players = await Promise.all(
-      team.playerIds.map((id) => this.playerRepository.findById(id))
-    );
+	async getTeamById(id: string): Promise<Team | null> {
+		const team = await this.teamRepository.findById(id);
+		if (!team) {
+			return null;
+		}
 
-    return {
-      ...team,
-      player: players.filter((p): p is any => p !== null),
-    };
-  }
+		const players = await Promise.all(
+			team.playerIds.map((id) => this.playerRepository.findById(id)),
+		);
 
-  async updateTeam(id: string, name: string, requesterId: string, requesterRole: string, playerIds?: string[], placeId?: string, coach?: string, crestUrl?: string, kitColor?: string): Promise<Team | null> {
-    const team = await this.teamRepository.findById(id);
-    if (!team) {
-      throw new Error("Team not found");
-    }
+		return {
+			...team,
+			player: players.filter((p): p is any => p !== null),
+		};
+	}
 
-    // Check ownership of the tournament(s) this team belongs to
-    if (this.tournamentUseCases && team.tournaments.length > 0) {
-      // For now, assume a team belongs to one tournament for mutation simplified check
-      const tournamentId = team.tournaments[0];
-      await this.tournamentUseCases.verifyTournamentOwnership(tournamentId, requesterId, requesterRole);
-    }
+	async updateTeam(
+		id: string,
+		name: string,
+		requesterId: string,
+		requesterRole: string,
+		playerIds?: string[],
+		placeId?: string,
+		coach?: string,
+		crestUrl?: string,
+		kitColor?: string,
+	): Promise<Team | null> {
+		const team = await this.teamRepository.findById(id);
+		if (!team) {
+			throw new Error("Team not found");
+		}
 
-    if (playerIds) {
-      for (const playerId of playerIds) {
-        const player = await this.playerRepository.findById(playerId);
-        if (!player) {
-          throw new Error("Player not found");
-        }
-      }
-      team.playerIds = playerIds;
-    }
+		// Check ownership of the tournament(s) this team belongs to
+		if (this.tournamentUseCases && team.tournaments.length > 0) {
+			// For now, assume a team belongs to one tournament for mutation simplified check
+			const tournamentId = team.tournaments[0];
+			await this.tournamentUseCases.verifyTournamentOwnership(
+				tournamentId,
+				requesterId,
+				requesterRole,
+			);
+		}
 
-    team.name = name;
-    team.placeId = placeId;
-    team.coach = coach;
-    team.crestUrl = crestUrl;
-    team.kitColor = kitColor;
-    await this.teamRepository.save(team);
-    return team;
-  }
+		if (playerIds) {
+			for (const playerId of playerIds) {
+				const player = await this.playerRepository.findById(playerId);
+				if (!player) {
+					throw new Error("Player not found");
+				}
+			}
+			team.playerIds = playerIds;
+		}
 
-  async addPlayer(teamId: string, playerId: string): Promise<void> {
-    const team = await this.teamRepository.findById(teamId);
-    if (!team) {
-      throw new Error("Team not found");
-    }
+		team.name = name;
+		team.placeId = placeId;
+		team.coach = coach;
+		team.crestUrl = crestUrl;
+		team.kitColor = kitColor;
+		await this.teamRepository.save(team);
 
-    const player = await this.playerRepository.findById(playerId);
-    if (!player) {
-      throw new Error("Player not found");
-    }
+		return team;
+	}
 
-    if (!team.playerIds.includes(playerId)) {
-      team.playerIds.push(playerId);
-      await this.teamRepository.save(team);
-    }
-  }
+	async addPlayer(teamId: string, playerId: string): Promise<void> {
+		const team = await this.teamRepository.findById(teamId);
+		if (!team) {
+			throw new Error("Team not found");
+		}
 
-  async deleteTeam(id: string, requesterId: string, requesterRole: string): Promise<void> {
-    const team = await this.teamRepository.findById(id);
-    if (!team) {
-      throw new Error("Team not found");
-    }
+		const player = await this.playerRepository.findById(playerId);
+		if (!player) {
+			throw new Error("Player not found");
+		}
 
-    if (this.tournamentUseCases && team.tournaments.length > 0) {
-      const tournamentId = team.tournaments[0];
-      await this.tournamentUseCases.verifyTournamentOwnership(tournamentId, requesterId, requesterRole);
-    }
+		if (!team.playerIds.includes(playerId)) {
+			team.playerIds.push(playerId);
+			await this.teamRepository.save(team);
+		}
+	}
 
-    if (this.matchRepository && team.tournaments.length > 0) {
-      const tournamentId = team.tournaments[0];
-      const matches = await this.matchRepository.getMatchesByTournament(tournamentId);
-      const hasMatches = matches.some(
-        (match) => match.teamAId === id || match.teamBId === id
-      );
-      if (hasMatches) {
-        throw new Error("Cannot delete team with existing matches");
-      }
-    }
+	async deleteTeam(id: string, requesterId: string, requesterRole: string): Promise<void> {
+		const team = await this.teamRepository.findById(id);
+		if (!team) {
+			throw new Error("Team not found");
+		}
 
-    await this.teamRepository.deleteById(id);
-  }
+		if (this.tournamentUseCases && team.tournaments.length > 0) {
+			const tournamentId = team.tournaments[0];
+			await this.tournamentUseCases.verifyTournamentOwnership(
+				tournamentId,
+				requesterId,
+				requesterRole,
+			);
+		}
+
+		if (this.matchRepository && team.tournaments.length > 0) {
+			const tournamentId = team.tournaments[0];
+			const matches = await this.matchRepository.getMatchesByTournament(tournamentId);
+			const hasMatches = matches.some((match) => match.teamAId === id || match.teamBId === id);
+			if (hasMatches) {
+				throw new Error("Cannot delete team with existing matches");
+			}
+		}
+
+		await this.teamRepository.deleteById(id);
+	}
 }

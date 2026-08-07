@@ -6,7 +6,9 @@
     "build": "rimraf dist && tsc && tsc-alias",
     "start": "node dist/index.js",
     "seed": "node dist/seed.js",
-    "test": "cucumber-js"
+    "lint": "eslint .",
+    "test": "cucumber-js",
+    "prepare": "husky || true"
   },
   "author": "",
   "license": "ISC",
@@ -42,9 +44,10 @@
     "chai": "^6.0.1",
     "eslint": "^9.35.0",
     "eslint-config-codely": "^4.5.0",
-    "eslint-plugin-import": "^2.32.0",
+    "eslint-import-resolver-typescript": "^4.4.5",
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-unused-imports": "^4.2.0",
+    "husky": "^9.1.7",
     "nodemon": "^3.1.14",
     "prettier": "^3.9.6",
     "rimraf": "^6.1.3",

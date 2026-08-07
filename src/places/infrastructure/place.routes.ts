@@ -1,10 +1,11 @@
 import { Router } from "express";
-import { PlaceController } from "./place.controller";
-import { PlaceUseCases } from "../application/place.use-cases";
-import { repositories } from "../../shared/infrastructure/repository.factory";
-import { isAuthenticated, hasRole } from "../../auth/infrastructure/auth.middleware";
+
 import { UserRole } from "../../auth/domain/user";
+import { hasRole, isAuthenticated } from "../../auth/infrastructure/auth.middleware";
+import { repositories } from "../../shared/infrastructure/repository.factory";
 import { tournamentUseCases } from "../../tournaments/infrastructure/tournament.routes";
+import { PlaceUseCases } from "../application/place.use-cases";
+import { PlaceController } from "./place.controller";
 
 const router = Router();
 
@@ -16,7 +17,17 @@ const placeController = new PlaceController(placeUseCases);
 router.get("/places", placeController.getAllPlaces.bind(placeController));
 
 // Protected Routes
-router.post("/places", isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), placeController.createPlace.bind(placeController));
-router.delete("/places/:id", isAuthenticated, hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]), placeController.deletePlace.bind(placeController));
+router.post(
+	"/places",
+	isAuthenticated,
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	placeController.createPlace.bind(placeController),
+);
+router.delete(
+	"/places/:id",
+	isAuthenticated,
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	placeController.deletePlace.bind(placeController),
+);
 
 export default router;

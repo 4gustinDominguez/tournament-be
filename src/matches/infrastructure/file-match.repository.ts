@@ -1,73 +1,80 @@
-import { Match, MatchResult } from "../domain/match";
-import { MatchRepository } from "../domain/match.repository";
 import * as fs from "fs/promises";
 import * as path from "path";
 
+import { Match, MatchResult } from "../domain/match";
+import { MatchRepository } from "../domain/match.repository";
+
 export class FileMatchRepository implements MatchRepository {
-  private readonly dbPath = path.join(__dirname, "../../../data/matches.json");
+	private readonly dbPath = path.join(__dirname, "../../../data/matches.json");
 
-  private async readDb(): Promise<Match[]> {
-    try {
-      const data = await fs.readFile(this.dbPath, "utf-8");
-      return JSON.parse(data) as Match[];
-    } catch (error: any) {
-      // If the file doesn't exist, return an empty array
-      if (error.code === "ENOENT") {
-        return [];
-      }
-      throw error;
-    }
-  }
+	private async readDb(): Promise<Match[]> {
+		try {
+			const data = await fs.readFile(this.dbPath, "utf-8");
 
-  private async writeDb(matches: Match[]): Promise<void> {
-    await fs.writeFile(this.dbPath, JSON.stringify(matches, null, 2));
-  }
+			return JSON.parse(data) as Match[];
+		} catch (error: any) {
+			// If the file doesn't exist, return an empty array
+			if (error.code === "ENOENT") {
+				return [];
+			}
+			throw error;
+		}
+	}
 
-  async createMatch(match: Match): Promise<Match> {
-    const matches = await this.readDb();
-    matches.push(match);
-    await this.writeDb(matches);
-    return match;
-  }
+	private async writeDb(matches: Match[]): Promise<void> {
+		await fs.writeFile(this.dbPath, JSON.stringify(matches, null, 2));
+	}
 
-  async getMatchesByTournament(tournamentId: string): Promise<Match[]> {
-    const matches = await this.readDb();
-    return matches.filter((match) => match.tournamentId === tournamentId);
-  }
+	async createMatch(match: Match): Promise<Match> {
+		const matches = await this.readDb();
+		matches.push(match);
+		await this.writeDb(matches);
 
-  async getMatchesByReferee(refereeId: string): Promise<Match[]> {
-    const matches = await this.readDb();
-    return matches.filter((match) => match.refereeId === refereeId);
-  }
+		return match;
+	}
 
-  async getMatchById(id: string): Promise<Match | null> {
-    const matches = await this.readDb();
-    return matches.find((match) => match.id === id) || null;
-  }
+	async getMatchesByTournament(tournamentId: string): Promise<Match[]> {
+		const matches = await this.readDb();
 
-  async addResultToMatch(id: string, result: MatchResult): Promise<Match | null> {
-    const matches = await this.readDb();
-    const matchIndex = matches.findIndex((match) => match.id === id);
-    if (matchIndex === -1) {
-      return null;
-    }
-    matches[matchIndex].result = result;
-    await this.writeDb(matches);
-    return matches[matchIndex];
-  }
+		return matches.filter((match) => match.tournamentId === tournamentId);
+	}
 
-  async updateMatch(match: Match): Promise<void> {
-    const matches = await this.readDb();
-    const index = matches.findIndex((m) => m.id === match.id);
-    if (index !== -1) {
-      matches[index] = match;
-      await this.writeDb(matches);
-    }
-  }
+	async getMatchesByReferee(refereeId: string): Promise<Match[]> {
+		const matches = await this.readDb();
 
-  async deleteMatch(id: string): Promise<void> {
-    const matches = await this.readDb();
-    const filteredMatches = matches.filter((m) => m.id !== id);
-    await this.writeDb(filteredMatches);
-  }
+		return matches.filter((match) => match.refereeId === refereeId);
+	}
+
+	async getMatchById(id: string): Promise<Match | null> {
+		const matches = await this.readDb();
+
+		return matches.find((match) => match.id === id) ?? null;
+	}
+
+	async addResultToMatch(id: string, result: MatchResult): Promise<Match | null> {
+		const matches = await this.readDb();
+		const matchIndex = matches.findIndex((match) => match.id === id);
+		if (matchIndex === -1) {
+			return null;
+		}
+		matches[matchIndex].result = result;
+		await this.writeDb(matches);
+
+		return matches[matchIndex];
+	}
+
+	async updateMatch(match: Match): Promise<void> {
+		const matches = await this.readDb();
+		const index = matches.findIndex((m) => m.id === match.id);
+		if (index !== -1) {
+			matches[index] = match;
+			await this.writeDb(matches);
+		}
+	}
+
+	async deleteMatch(id: string): Promise<void> {
+		const matches = await this.readDb();
+		const filteredMatches = matches.filter((m) => m.id !== id);
+		await this.writeDb(filteredMatches);
+	}
 }

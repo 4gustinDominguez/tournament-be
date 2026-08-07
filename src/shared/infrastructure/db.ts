@@ -90,31 +90,33 @@ CREATE TABLE IF NOT EXISTS matches (
 let pool: Pool | null = null;
 
 function resolveSsl(connectionString: string): { rejectUnauthorized: false } | undefined {
-  if (process.env.DB_SSL === "true") {
-    return { rejectUnauthorized: false };
-  }
-  try {
-    const hostname = new URL(connectionString).hostname;
-    if (hostname.includes("supabase")) {
-      return { rejectUnauthorized: false };
-    }
-  } catch {
-    // URL mal formada: se ignora y se conecta sin SSL
-  }
-  return undefined;
+	if (process.env.DB_SSL === "true") {
+		return { rejectUnauthorized: false };
+	}
+	try {
+		const hostname = new URL(connectionString).hostname;
+		if (hostname.includes("supabase")) {
+			return { rejectUnauthorized: false };
+		}
+	} catch {
+		// URL mal formada: se ignora y se conecta sin SSL
+	}
+
+	return undefined;
 }
 
 export function getPool(): Pool {
-  if (!pool) {
-    const connectionString = process.env.DATABASE_URL;
-    if (!connectionString) {
-      throw new Error("DATABASE_URL is required when using Postgres storage");
-    }
-    pool = new Pool({ connectionString, max: 10, ssl: resolveSsl(connectionString) });
-  }
-  return pool;
+	if (!pool) {
+		const connectionString = process.env.DATABASE_URL;
+		if (!connectionString) {
+			throw new Error("DATABASE_URL is required when using Postgres storage");
+		}
+		pool = new Pool({ connectionString, max: 10, ssl: resolveSsl(connectionString) });
+	}
+
+	return pool;
 }
 
 export async function initDatabase(p: Pool = getPool()): Promise<void> {
-  await p.query(SCHEMA_SQL);
+	await p.query(SCHEMA_SQL);
 }
