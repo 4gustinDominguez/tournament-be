@@ -1,16 +1,11 @@
 import { Before, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
-import fs from "fs/promises";
 
 import { PlaceUseCases } from "../../src/places/application/place.use-cases";
 import { Place } from "../../src/places/domain/place.entity";
-import { FilePlaceRepository } from "../../src/places/infrastructure/file-place.repository";
 import { TournamentUseCases } from "../../src/tournaments/application/tournament.use-cases";
 import { Tournament } from "../../src/tournaments/domain/tournament";
-import { FileTournamentRepository } from "../../src/tournaments/infrastructure/file-tournament.repository";
-
-const PLACES_FILE_PATH = "./data/places.json";
-const TOURNAMENTS_FILE_PATH = "./data/tournaments.json";
+import { repositories } from "./test-repositories";
 
 let placeUseCases: PlaceUseCases;
 let tournamentUseCases: TournamentUseCases;
@@ -19,24 +14,8 @@ let placesList: Place[] = [];
 let lastError: Error | null = null;
 
 Before(async function () {
-	try {
-		await fs.unlink(PLACES_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(TOURNAMENTS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-
-	const placeRepository = new FilePlaceRepository();
-	const tournamentRepository = new FileTournamentRepository();
-	tournamentUseCases = new TournamentUseCases(tournamentRepository);
+	const placeRepository = repositories.place;
+	tournamentUseCases = new TournamentUseCases(repositories.tournament);
 	placeUseCases = new PlaceUseCases(placeRepository, tournamentUseCases);
 
 	tournaments = [];

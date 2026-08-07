@@ -11,6 +11,7 @@ export class FileUserRepository implements UserRepository {
 		try {
 			await fs.access(this.filePath);
 		} catch {
+			await fs.mkdir(path.dirname(this.filePath), { recursive: true });
 			await fs.writeFile(this.filePath, JSON.stringify([]));
 		}
 	}

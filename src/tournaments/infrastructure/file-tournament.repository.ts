@@ -1,4 +1,5 @@
 import fs from "fs/promises";
+import path from "path";
 
 import { Tournament } from "../domain/tournament";
 import { TournamentRepository } from "../domain/tournament.repository";
@@ -6,6 +7,10 @@ import { TournamentRepository } from "../domain/tournament.repository";
 const TOURNAMENTS_FILE_PATH = "./data/tournaments.json";
 
 export class FileTournamentRepository implements TournamentRepository {
+	private async ensureDataDir(): Promise<void> {
+		await fs.mkdir(path.dirname(TOURNAMENTS_FILE_PATH), { recursive: true });
+	}
+
 	async getAll(): Promise<Tournament[]> {
 		try {
 			const data = await fs.readFile(TOURNAMENTS_FILE_PATH, "utf-8");
@@ -34,6 +39,7 @@ export class FileTournamentRepository implements TournamentRepository {
 		} else {
 			tournaments[index] = tournament;
 		}
+		await this.ensureDataDir();
 		await fs.writeFile(TOURNAMENTS_FILE_PATH, JSON.stringify(tournaments, null, 2));
 	}
 
@@ -49,6 +55,7 @@ export class FileTournamentRepository implements TournamentRepository {
 		const index = tournaments.findIndex((t) => t.id === tournament.id);
 		if (index !== -1) {
 			tournaments[index] = tournament;
+			await this.ensureDataDir();
 			await fs.writeFile(TOURNAMENTS_FILE_PATH, JSON.stringify(tournaments, null, 2));
 		}
 	}
@@ -56,6 +63,7 @@ export class FileTournamentRepository implements TournamentRepository {
 	async delete(id: string): Promise<void> {
 		const tournaments = await this.getAll();
 		const filteredTournaments = tournaments.filter((t) => t.id !== id);
+		await this.ensureDataDir();
 		await fs.writeFile(TOURNAMENTS_FILE_PATH, JSON.stringify(filteredTournaments, null, 2));
 	}
 }

@@ -27,6 +27,7 @@ export class FileRoundRepository implements RoundRepository {
 	}
 
 	private async writeDb(rounds: Round[]): Promise<void> {
+		await fs.mkdir(path.dirname(this.dbPath), { recursive: true });
 		await fs.writeFile(this.dbPath, JSON.stringify(rounds, null, 2));
 	}
 

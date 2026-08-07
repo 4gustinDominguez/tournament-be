@@ -1,27 +1,16 @@
 import { Before, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
-import fs from "fs/promises";
 
 import { PlayerUseCases } from "../../src/players/application/player.use-cases";
 import { Player } from "../../src/players/domain/player";
-import { FilePlayerRepository } from "../../src/players/infrastructure/file-player.repository";
-
-const PLAYERS_FILE_PATH = "./data/players.json";
+import { repositories } from "./test-repositories";
 
 let lastError: Error | null = null;
 let playerUseCases: PlayerUseCases;
 let playersList: Player[] = [];
 
 Before(async function () {
-	try {
-		await fs.unlink(PLAYERS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	const playerRepository = new FilePlayerRepository();
-	playerUseCases = new PlayerUseCases(playerRepository);
+	playerUseCases = new PlayerUseCases(repositories.player);
 	playersList = [];
 	lastError = null;
 });

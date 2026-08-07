@@ -1,28 +1,20 @@
 import { Before, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
-import fs from "fs/promises";
 import { v4 as uuid } from "uuid";
 
 import { MatchUseCases } from "../../src/matches/application/match.use-cases";
 import { Match, MatchResult } from "../../src/matches/domain/match";
-import { FileMatchRepository } from "../../src/matches/infrastructure/file-match.repository";
-import { FilePlayerRepository } from "../../src/players/infrastructure/file-player.repository";
-import { FileRoundRepository } from "../../src/rounds/infrastructure/file-round.repository";
+import { InMemoryRoundRepository } from "../../src/rounds/infrastructure/in-memory-round.repository";
 import { TeamUseCases } from "../../src/teams/application/team.use-cases";
 import { Team } from "../../src/teams/domain/team";
-import { FileTeamRepository } from "../../src/teams/infrastructure/file-team.repository";
 import { TournamentUseCases } from "../../src/tournaments/application/tournament.use-cases";
 import { Tournament } from "../../src/tournaments/domain/tournament";
-import { FileTournamentRepository } from "../../src/tournaments/infrastructure/file-tournament.repository";
-
-const MATCHES_FILE_PATH = "./data/matches.json";
-const TEAMS_FILE_PATH = "./data/teams.json";
-const TOURNAMENTS_FILE_PATH = "./data/tournaments.json";
-const ROUNDS_FILE_PATH = "./data/rounds.json";
+import { repositories } from "./test-repositories";
 
 let matchUseCases: MatchUseCases;
 let teamUseCases: TeamUseCases;
 let tournamentUseCases: TournamentUseCases;
+let roundRepository: InMemoryRoundRepository;
 let createdMatch: Match | null = null;
 let updatedMatch: Match | null = null;
 let tournaments: Tournament[] = [];
@@ -30,50 +22,20 @@ let teams: Team[] = [];
 let lastError: Error | null = null;
 
 Before(async function () {
-	try {
-		await fs.unlink(MATCHES_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(TEAMS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(TOURNAMENTS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(ROUNDS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-
 	createdMatch = null;
 	updatedMatch = null;
 	tournaments = [];
 	teams = [];
 	lastError = null;
 
-	const tournamentRepository = new FileTournamentRepository();
-	tournamentUseCases = new TournamentUseCases(tournamentRepository);
+	tournamentUseCases = new TournamentUseCases(repositories.tournament);
 
-	const teamRepository = new FileTeamRepository();
-	const playerRepository = new FilePlayerRepository();
+	const teamRepository = repositories.team;
+	const playerRepository = repositories.player;
 	teamUseCases = new TeamUseCases(teamRepository, playerRepository);
 
-	const matchRepository = new FileMatchRepository();
-	const roundRepository = new FileRoundRepository();
+	const matchRepository = repositories.match;
+	roundRepository = repositories.round;
 	matchUseCases = new MatchUseCases(matchRepository, roundRepository);
 });
 
@@ -107,7 +69,6 @@ Given(
 		}
 
 		// Create a mock round because createMatch now checks for it
-		const roundRepository = new FileRoundRepository();
 		const roundId = uuid();
 		await roundRepository.createRound({
 			id: roundId,

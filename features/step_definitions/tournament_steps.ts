@@ -1,12 +1,9 @@
 import { Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
-import fs from "fs/promises";
 
 import { TournamentUseCases } from "../../src/tournaments/application/tournament.use-cases";
 import { Tournament } from "../../src/tournaments/domain/tournament";
-import { FileTournamentRepository } from "../../src/tournaments/infrastructure/file-tournament.repository";
-
-const TOURNAMENTS_FILE_PATH = "./data/tournaments.json";
+import { repositories } from "./test-repositories";
 
 let tournamentUseCases: TournamentUseCases;
 let createdTournament: Tournament | null = null;
@@ -15,16 +12,7 @@ let fetchedTournament: Tournament | null = null;
 let lastError: Error | null = null;
 
 Given("there are no tournaments", async function () {
-	// Clean up the tournaments file before each scenario
-	try {
-		await fs.unlink(TOURNAMENTS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	const tournamentRepository = new FileTournamentRepository();
-	tournamentUseCases = new TournamentUseCases(tournamentRepository);
+	tournamentUseCases = new TournamentUseCases(repositories.tournament);
 	lastError = null;
 });
 

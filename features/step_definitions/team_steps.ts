@@ -1,23 +1,17 @@
 import { Before, Given, Then, When } from "@cucumber/cucumber";
 import { expect } from "chai";
-import fs from "fs/promises";
 import { v4 as uuid } from "uuid";
 
-import { FileMatchRepository } from "../../src/matches/infrastructure/file-match.repository";
+import { InMemoryMatchRepository } from "../../src/matches/infrastructure/in-memory-match.repository";
 import { PlayerUseCases } from "../../src/players/application/player.use-cases";
 import { Player } from "../../src/players/domain/player";
-import { FilePlayerRepository } from "../../src/players/infrastructure/file-player.repository";
 import { TeamUseCases } from "../../src/teams/application/team.use-cases";
 import { Team } from "../../src/teams/domain/team";
-import { FileTeamRepository } from "../../src/teams/infrastructure/file-team.repository";
-
-const TEAMS_FILE_PATH = "./data/teams.json";
-const PLAYERS_FILE_PATH = "./data/players.json";
-const MATCHES_FILE_PATH = "./data/matches.json";
+import { repositories } from "./test-repositories";
 
 let teamUseCases: TeamUseCases;
 let playerUseCases: PlayerUseCases;
-let matchRepository: FileMatchRepository;
+let matchRepository: InMemoryMatchRepository;
 let createdTeam: Team | null = null;
 let teamsList: Team[] = [];
 let players: Player[] = [];
@@ -25,31 +19,9 @@ let updatedTeam: Team | null = null;
 let lastError: Error | null = null;
 
 Before(async function () {
-	try {
-		await fs.unlink(TEAMS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(PLAYERS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-	try {
-		await fs.unlink(MATCHES_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-
-	const teamRepository = new FileTeamRepository();
-	const playerRepository = new FilePlayerRepository();
-	matchRepository = new FileMatchRepository();
+	const teamRepository = repositories.team;
+	const playerRepository = repositories.player;
+	matchRepository = repositories.match;
 	teamUseCases = new TeamUseCases(teamRepository, playerRepository, undefined, matchRepository);
 	playerUseCases = new PlayerUseCases(playerRepository);
 

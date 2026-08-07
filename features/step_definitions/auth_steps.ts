@@ -1,30 +1,20 @@
 import { Before, Given, Then, When } from "@cucumber/cucumber";
 import bcrypt from "bcryptjs";
 import { expect } from "chai";
-import fs from "fs/promises";
 
 import { AuthUseCases } from "../../src/auth/application/auth.use-cases";
 import { User } from "../../src/auth/domain/user";
-import { FileUserRepository } from "../../src/auth/infrastructure/file-user.repository";
-
-const USERS_FILE_PATH = "./data/users.json";
+import { UserRepository } from "../../src/auth/domain/user.repository";
+import { repositories } from "./test-repositories";
 
 let authUseCases: AuthUseCases;
-let userRepository: FileUserRepository;
+let userRepository: UserRepository;
 let registeredUser: User | null = null;
 let updatedProfile: any = null;
 let lastError: Error | null = null;
 
 Before(async function () {
-	try {
-		await fs.unlink(USERS_FILE_PATH);
-	} catch (error: any) {
-		if (error.code !== "ENOENT") {
-			throw error;
-		}
-	}
-
-	userRepository = new FileUserRepository();
+	userRepository = repositories.user;
 	authUseCases = new AuthUseCases(userRepository);
 
 	registeredUser = null;

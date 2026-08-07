@@ -22,6 +22,7 @@ export class FileMatchRepository implements MatchRepository {
 	}
 
 	private async writeDb(matches: Match[]): Promise<void> {
+		await fs.mkdir(path.dirname(this.dbPath), { recursive: true });
 		await fs.writeFile(this.dbPath, JSON.stringify(matches, null, 2));
 	}
 

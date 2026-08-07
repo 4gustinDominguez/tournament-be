@@ -21,6 +21,7 @@ export class FileRefereeRepository implements RefereeRepository {
 	}
 
 	private async writeDb(referees: Referee[]): Promise<void> {
+		await fs.mkdir(path.dirname(this.dbPath), { recursive: true });
 		await fs.writeFile(this.dbPath, JSON.stringify(referees, null, 2));
 	}
 
