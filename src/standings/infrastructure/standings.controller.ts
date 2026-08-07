@@ -10,11 +10,11 @@ export class StandingsController {
 			const { id } = req.params;
 			const standings = await this.standingsUseCases.getStandings(id);
 			res.json(standings);
-		} catch (error: any) {
-			if (error.message === "Tournament not found") {
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message === "Tournament not found") {
 				res.status(404).json({ message: error.message });
 			} else {
-				res.status(400).json({ message: error.message });
+				res.status(400).json({ message: error instanceof Error ? error.message : String(error) });
 			}
 		}
 	}

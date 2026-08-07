@@ -43,7 +43,7 @@ export class PlayerController {
 				statistics,
 			);
 			res.status(201).json(newPlayer);
-		} catch (error) {
+		} catch (error: unknown) {
 			if (error instanceof ZodError) {
 				res.status(400).json({ message: "Validation error", errors: error });
 			} else {
@@ -72,10 +72,10 @@ export class PlayerController {
 			const updates = updatePlayerSchema.parse(req.body);
 			const updatedPlayer = await this.playerUseCases.updatePlayer(id, updates);
 			res.json(updatedPlayer);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (error instanceof ZodError) {
 				res.status(400).json({ message: "Validation error", errors: error });
-			} else if (error.message === "Player not found") {
+			} else if (error instanceof Error && error.message === "Player not found") {
 				res.status(404).json({ message: "Player not found" });
 			} else {
 				res.status(500).json({ message: "Error updating player" });
@@ -88,8 +88,8 @@ export class PlayerController {
 			const { id } = req.params;
 			await this.playerUseCases.deletePlayer(id);
 			res.status(204).send();
-		} catch (error: any) {
-			if (error.message === "Player not found") {
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message === "Player not found") {
 				res.status(404).json({ message: "Player not found" });
 			} else {
 				res.status(500).json({ message: "Error deleting player" });

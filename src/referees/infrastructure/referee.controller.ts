@@ -1,14 +1,30 @@
 import { Request, Response } from "express";
 
+import { UserRole } from "../../auth/domain/user";
 import { RefereeUseCases } from "../application/referee.use-cases";
 import { createRefereeSchema, updateRefereeSchema } from "../domain/referee.validator";
+
+interface AuthUser {
+	id: string;
+	email: string;
+	role: UserRole;
+}
+
+interface AuthRequest extends Request {
+	user?: AuthUser;
+}
 
 export class RefereeController {
 	constructor(private readonly refereeUseCases: RefereeUseCases) {}
 
 	async createReferee(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { name, tournamentIds, userId } = createRefereeSchema.parse(req.body);
 			const referee = await this.refereeUseCases.createReferee(
 				name,
@@ -18,18 +34,23 @@ export class RefereeController {
 				userId,
 			);
 			res.status(201).json(referee);
-		} catch (error: any) {
-			if (error.message && error.message.includes("Unauthorized")) {
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message.includes("Unauthorized")) {
 				res.status(403).json({ error: error.message });
 			} else {
-				res.status(400).json({ error: error.message });
+				res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
 			}
 		}
 	}
 
 	async getMe(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const referee = await this.refereeUseCases.getRefereeByUserId(user.id);
 			if (!referee) {
 				res.status(404).json({ error: "Referee profile not found for this user" });
@@ -37,8 +58,8 @@ export class RefereeController {
 				return;
 			}
 			res.json(referee);
-		} catch (error: any) {
-			res.status(500).json({ error: error.message });
+		} catch (error: unknown) {
+			res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
@@ -52,8 +73,8 @@ export class RefereeController {
 			}
 			const referees = await this.refereeUseCases.getRefereesByTournament(tournamentId);
 			res.json(referees);
-		} catch (error: any) {
-			res.status(500).json({ error: error.message });
+		} catch (error: unknown) {
+			res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
@@ -61,14 +82,19 @@ export class RefereeController {
 		try {
 			const referees = await this.refereeUseCases.getAllReferees();
 			res.json(referees);
-		} catch (error: any) {
-			res.status(500).json({ error: error.message });
+		} catch (error: unknown) {
+			res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
 	async updateReferee(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { id } = req.params;
 			const { name, tournamentIds, userId } = updateRefereeSchema.parse(req.body);
 			const referee = await this.refereeUseCases.updateReferee(
@@ -80,23 +106,28 @@ export class RefereeController {
 				userId,
 			);
 			res.json(referee);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			console.error(error);
-			res.status(400).json({ error: error.message });
+			res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
 		}
 	}
 
 	async deleteReferee(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { id } = req.params;
 			await this.refereeUseCases.deleteReferee(id, user.id, user.role);
 			res.status(204).send();
-		} catch (error: any) {
-			if (error.message && error.message.includes("Unauthorized")) {
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message.includes("Unauthorized")) {
 				res.status(403).json({ error: error.message });
 			} else {
-				res.status(500).json({ error: error.message });
+				res.status(500).json({ error: error instanceof Error ? error.message : String(error) });
 			}
 		}
 	}

@@ -6,6 +6,16 @@ import { UserRole } from "../domain/user";
 
 const jwtSecret = getJwtSecret();
 
+interface JwtPayload {
+	id: string;
+	email: string;
+	role: UserRole;
+}
+
+interface AuthRequest extends Request {
+	user?: JwtPayload;
+}
+
 export const isAuthenticated = (
 	req: Request,
 	res: Response,
@@ -19,8 +29,8 @@ export const isAuthenticated = (
 	const token = authHeader.split(" ")[1];
 
 	try {
-		const decoded = jwt.verify(token, jwtSecret);
-		(req as any).user = decoded;
+		const decoded = jwt.verify(token, jwtSecret) as JwtPayload;
+		(req as AuthRequest).user = decoded;
 		next();
 	} catch (_error) {
 		return res.status(401).json({ message: "Invalid or expired token" });
@@ -31,7 +41,7 @@ export const hasRole = (
 	roles: UserRole[],
 ): ((req: Request, res: Response, next: NextFunction) => void | Response) => {
 	return (req: Request, res: Response, next: NextFunction) => {
-		const user = (req as any).user;
+		const user = (req as AuthRequest).user;
 		if (!user || !roles.includes(user.role)) {
 			return res.status(403).json({ message: "Unauthorized role" });
 		}

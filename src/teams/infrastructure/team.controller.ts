@@ -1,8 +1,19 @@
 import { Request, Response } from "express";
 import { ZodError } from "zod";
 
+import { UserRole } from "../../auth/domain/user";
 import { TeamUseCases } from "../application/team.use-cases";
 import { createTeamSchema, updateTeamSchema } from "../domain/team.validator";
+
+interface AuthUser {
+	id: string;
+	email: string;
+	role: UserRole;
+}
+
+interface AuthRequest extends Request {
+	user?: AuthUser;
+}
 
 export class TeamController {
 	constructor(private readonly teamUseCases: TeamUseCases) {}
@@ -19,7 +30,12 @@ export class TeamController {
 
 	async createTeam(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { name, playerIds, tournamentId, placeId, coach, crestUrl, kitColor } =
 				createTeamSchema.parse(req.body);
 
@@ -41,13 +57,16 @@ export class TeamController {
 				kitColor,
 			);
 			res.status(201).json(newTeam);
-		} catch (error: any) {
+		} catch (error: unknown) {
 			if (error instanceof ZodError) {
 				res.status(400).json({ message: "Validation error", errors: error });
-			} else if (error.message.includes("Unauthorized")) {
+			} else if (error instanceof Error && error.message.includes("Unauthorized")) {
 				res.status(403).json({ message: error.message });
 			} else {
-				res.status(500).json({ message: "Error creating team", error: error.message });
+				res.status(500).json({
+					message: "Error creating team",
+					error: error instanceof Error ? error.message : String(error),
+				});
 			}
 		}
 	}
@@ -68,7 +87,12 @@ export class TeamController {
 
 	async updateTeam(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { id } = req.params;
 			const { name, playerIds, placeId, coach, crestUrl, kitColor } = updateTeamSchema.parse(
 				req.body,
@@ -89,7 +113,7 @@ export class TeamController {
 			} else {
 				res.status(404).json({ message: "Team not found" });
 			}
-		} catch (error) {
+		} catch (error: unknown) {
 			if (error instanceof ZodError) {
 				res.status(400).json({ message: "Validation error", errors: error });
 			} else if (error instanceof Error && error.message.includes("Unauthorized")) {
@@ -102,12 +126,17 @@ export class TeamController {
 
 	async deleteTeam(req: Request, res: Response): Promise<void> {
 		try {
-			const user = (req as any).user;
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
 			const { id } = req.params;
 			await this.teamUseCases.deleteTeam(id, user.id, user.role);
 			res.status(204).send();
-		} catch (error: any) {
-			if (error.message && error.message.includes("Unauthorized")) {
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message.includes("Unauthorized")) {
 				res.status(403).json({ message: error.message });
 			} else {
 				res.status(500).json({ message: "Error deleting team" });
