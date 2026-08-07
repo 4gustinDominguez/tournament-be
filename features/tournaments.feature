@@ -28,3 +28,20 @@ Feature: Tournaments
     When I create a tournament named "Tournament to delete"
     And I delete the tournament named "Tournament to delete"
     Then I should not see a tournament named "Tournament to delete"
+
+  Scenario: Delete a tournament cascades to its data
+    Given there are no tournaments
+    When I create a tournament named "Cascade Tournament"
+    And a team named "Only Team" in the tournament "Cascade Tournament" with a player named "Only Player"
+    And a team named "Shared Team" shared with another tournament in the tournament "Cascade Tournament"
+    And a match in the tournament "Cascade Tournament"
+    And a round in the tournament "Cascade Tournament"
+    And a place in the tournament "Cascade Tournament"
+    And a referee named "Ref One" assigned to the tournament "Cascade Tournament"
+    And I delete the tournament named "Cascade Tournament"
+    Then I should not see a tournament named "Cascade Tournament"
+    And the deleted tournament should not have any associated data
+    And a team named "Only Team" should not exist
+    And a player named "Only Player" should not exist
+    And a team named "Shared Team" should still exist and not belong to the deleted tournament
+    And a referee named "Ref One" should still exist and not be assigned to the deleted tournament

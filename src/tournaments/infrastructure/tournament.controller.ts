@@ -38,7 +38,7 @@ export class TournamentController {
 				location,
 			);
 			res.status(201).json(newTournament);
-		} catch (error: any) {
+		} catch (error) {
 			if (error instanceof ZodError) {
 				res.status(400).json({ message: "Validation error", errors: error });
 			} else {

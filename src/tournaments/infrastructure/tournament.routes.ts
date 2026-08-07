@@ -9,7 +9,15 @@ import { TournamentController } from "./tournament.controller";
 const router = Router();
 
 const tournamentRepository = repositories.tournament;
-export const tournamentUseCases = new TournamentUseCases(tournamentRepository);
+export const tournamentUseCases = new TournamentUseCases(
+	tournamentRepository,
+	repositories.match,
+	repositories.round,
+	repositories.team,
+	repositories.player,
+	repositories.place,
+	repositories.referee,
+);
 const tournamentController = new TournamentController(tournamentUseCases);
 
 router.get("/tournaments", tournamentController.getAllTournaments.bind(tournamentController));
