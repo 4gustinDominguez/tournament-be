@@ -48,6 +48,13 @@ export class TeamUseCases {
 		coach?: string,
 		crestUrl?: string,
 		kitColor?: string,
+		kitPattern?: "solid" | "horizontal-stripes" | "vertical-stripes" | "quartered" | "sash",
+		kitColors?: string[],
+		formation?: {
+			gameFormat: "5" | "7" | "11";
+			formationType: string;
+			positions: Record<string, string | null>;
+		},
 	): Promise<Team | null> {
 		if (this.tournamentUseCases) {
 			await this.tournamentUseCases.verifyTournamentOwnership(
@@ -73,6 +80,9 @@ export class TeamUseCases {
 			coach,
 			crestUrl,
 			kitColor,
+			kitPattern,
+			kitColors,
+			formation,
 		};
 		await this.teamRepository.save(newTeam);
 
@@ -109,6 +119,13 @@ export class TeamUseCases {
 		coach?: string,
 		crestUrl?: string,
 		kitColor?: string,
+		kitPattern?: "solid" | "horizontal-stripes" | "vertical-stripes" | "quartered" | "sash",
+		kitColors?: string[],
+		formation?: {
+			gameFormat: "5" | "7" | "11";
+			formationType: string;
+			positions: Record<string, string | null>;
+		},
 	): Promise<Team | null> {
 		const team = await this.teamRepository.findById(id);
 		if (!team) {
@@ -141,6 +158,15 @@ export class TeamUseCases {
 		team.coach = coach;
 		team.crestUrl = crestUrl;
 		team.kitColor = kitColor;
+		if (kitPattern !== undefined) {
+			team.kitPattern = kitPattern;
+		}
+		if (kitColors !== undefined) {
+			team.kitColors = kitColors;
+		}
+		if (formation !== undefined) {
+			team.formation = formation;
+		}
 		await this.teamRepository.save(team);
 
 		return team;

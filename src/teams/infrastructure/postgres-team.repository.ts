@@ -14,6 +14,9 @@ function toTeam(row: any): Team {
 		coach: row.coach,
 		crestUrl: row.crest_url,
 		kitColor: row.kit_color,
+		kitPattern: row.kit_pattern,
+		kitColors: row.kit_colors ?? [],
+		formation: row.formation,
 	};
 }
 
@@ -28,8 +31,8 @@ export class PostgresTeamRepository implements TeamRepository {
 
 	async save(team: Team): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO teams (id, name, player_ids, logo, tournaments, place_id, coach, crest_url, kit_color)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+			`INSERT INTO teams (id, name, player_ids, logo, tournaments, place_id, coach, crest_url, kit_color, kit_pattern, kit_colors, formation)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          player_ids = EXCLUDED.player_ids,
@@ -38,7 +41,10 @@ export class PostgresTeamRepository implements TeamRepository {
          place_id = EXCLUDED.place_id,
          coach = EXCLUDED.coach,
          crest_url = EXCLUDED.crest_url,
-         kit_color = EXCLUDED.kit_color`,
+         kit_color = EXCLUDED.kit_color,
+         kit_pattern = EXCLUDED.kit_pattern,
+         kit_colors = EXCLUDED.kit_colors,
+         formation = EXCLUDED.formation`,
 			[
 				team.id,
 				team.name,
@@ -49,6 +55,9 @@ export class PostgresTeamRepository implements TeamRepository {
 				team.coach,
 				team.crestUrl,
 				team.kitColor,
+				team.kitPattern,
+				team.kitColors,
+				team.formation,
 			],
 		);
 	}

@@ -47,3 +47,29 @@ Feature: Teams
     When I update the team named "Original Team" to have player "Jane Doe"
     Then I should see a team named "Original Team" with player "Jane Doe"
     And I should see a team named "Original Team" without player "John Doe"
+
+  Scenario: Update a team's kit pattern and colors
+    Given there are no teams
+    And there is a player named "John Doe" with nickname "Johnny"
+    When I create a team named "Kit Team" with player "John Doe"
+    And I update the team's kit to pattern "horizontal-stripes" with colors "#FF0000" and "#FFFFFF"
+    Then the team kit pattern should be "horizontal-stripes"
+    And the team kit colors should include "#FF0000" and "#FFFFFF"
+
+  Scenario: Update a team's formation
+    Given there are no teams
+    And there is a player named "John Doe" with nickname "Johnny"
+    And there is a player named "Jane Doe" with nickname "Janie"
+    When I create a team named "Formation Team" with player "John Doe"
+    And I update the team's formation to format "11" type "4-4-2"
+    Then the team formation format should be "11"
+    And the team formation type should be "4-4-2"
+
+  Scenario: Update formation clears positions when switching format
+    Given there are no teams
+    And there is a player named "John Doe" with nickname "Johnny"
+    When I create a team named "Formation Team" with player "John Doe"
+    And I update the team's formation to format "11" type "4-4-2"
+    And I update the team's formation to format "5" type "1-1-2"
+    Then the team formation format should be "5"
+    And the team formation type should be "1-1-2"

@@ -31,7 +31,10 @@ CREATE TABLE IF NOT EXISTS teams (
   place_id TEXT,
   coach TEXT,
   crest_url TEXT,
-  kit_color TEXT
+  kit_color TEXT,
+  kit_pattern TEXT,
+  kit_colors TEXT[] NOT NULL DEFAULT '{}',
+  formation JSONB
 );
 
 CREATE TABLE IF NOT EXISTS players (
@@ -119,4 +122,14 @@ export function getPool(): Pool {
 
 export async function initDatabase(p: Pool = getPool()): Promise<void> {
 	await p.query(SCHEMA_SQL);
+	await runMigrations(p);
+}
+
+async function runMigrations(p: Pool): Promise<void> {
+	await p.query(`
+		ALTER TABLE teams
+		ADD COLUMN IF NOT EXISTS kit_pattern TEXT,
+		ADD COLUMN IF NOT EXISTS kit_colors TEXT[] NOT NULL DEFAULT '{}',
+		ADD COLUMN IF NOT EXISTS formation JSONB;
+	`);
 }

@@ -201,3 +201,74 @@ Then(
 		expect(team?.playerIds).to.not.include(player?.id);
 	},
 );
+
+When(
+	"I update the team's kit to pattern {string} with colors {string} and {string}",
+	async function (pattern: string, color1: string, color2: string) {
+		if (createdTeam) {
+			updatedTeam = await teamUseCases.updateTeam(
+				createdTeam.id,
+				createdTeam.name,
+				"requester",
+				"SUPER_ADMIN",
+				[],
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				pattern as "solid" | "horizontal-stripes" | "vertical-stripes" | "quartered" | "sash",
+				[color1, color2],
+			);
+		}
+	},
+);
+
+Then("the team kit pattern should be {string}", function (pattern: string) {
+	expect(updatedTeam).to.not.be.null;
+	expect(updatedTeam?.kitPattern).to.equal(pattern);
+});
+
+Then(
+	"the team kit colors should include {string} and {string}",
+	function (color1: string, color2: string) {
+		expect(updatedTeam).to.not.be.null;
+		expect(updatedTeam?.kitColors).to.include(color1);
+		expect(updatedTeam?.kitColors).to.include(color2);
+	},
+);
+
+When(
+	"I update the team's formation to format {string} type {string}",
+	async function (format: string, formationType: string) {
+		if (createdTeam) {
+			updatedTeam = await teamUseCases.updateTeam(
+				createdTeam.id,
+				createdTeam.name,
+				"requester",
+				"SUPER_ADMIN",
+				[],
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				undefined,
+				{
+					gameFormat: format as "5" | "7" | "11",
+					formationType,
+					positions: {},
+				},
+			);
+		}
+	},
+);
+
+Then("the team formation format should be {string}", function (format: string) {
+	expect(updatedTeam).to.not.be.null;
+	expect(updatedTeam?.formation?.gameFormat).to.equal(format);
+});
+
+Then("the team formation type should be {string}", function (formationType: string) {
+	expect(updatedTeam).to.not.be.null;
+	expect(updatedTeam?.formation?.formationType).to.equal(formationType);
+});

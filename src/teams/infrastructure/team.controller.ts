@@ -36,8 +36,18 @@ export class TeamController {
 
 				return;
 			}
-			const { name, playerIds, tournamentId, placeId, coach, crestUrl, kitColor } =
-				createTeamSchema.parse(req.body);
+			const {
+				name,
+				playerIds,
+				tournamentId,
+				placeId,
+				coach,
+				crestUrl,
+				kitColor,
+				kitPattern,
+				kitColors,
+				formation,
+			} = createTeamSchema.parse(req.body);
 
 			if (!tournamentId) {
 				res.status(400).json({ message: "Tournament ID is required" });
@@ -52,9 +62,12 @@ export class TeamController {
 				user.id,
 				user.role,
 				placeId,
-				coach,
-				crestUrl,
-				kitColor,
+				coach ?? undefined,
+				crestUrl ?? undefined,
+				kitColor ?? undefined,
+				kitPattern ?? undefined,
+				kitColors ?? undefined,
+				formation ?? undefined,
 			);
 			res.status(201).json(newTeam);
 		} catch (error: unknown) {
@@ -94,19 +107,30 @@ export class TeamController {
 				return;
 			}
 			const { id } = req.params;
-			const { name, playerIds, placeId, coach, crestUrl, kitColor } = updateTeamSchema.parse(
-				req.body,
-			);
+			const {
+				name,
+				playerIds,
+				placeId,
+				coach,
+				crestUrl,
+				kitColor,
+				kitPattern,
+				kitColors,
+				formation,
+			} = updateTeamSchema.parse(req.body);
 			const updatedTeam = await this.teamUseCases.updateTeam(
 				id,
 				name,
 				user.id,
 				user.role,
 				playerIds,
-				placeId,
-				coach,
-				crestUrl,
-				kitColor,
+				placeId ?? undefined,
+				coach ?? undefined,
+				crestUrl ?? undefined,
+				kitColor ?? undefined,
+				kitPattern ?? undefined,
+				kitColors ?? undefined,
+				formation ?? undefined,
 			);
 			if (updatedTeam) {
 				res.json(updatedTeam);
