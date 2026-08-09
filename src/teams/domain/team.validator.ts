@@ -6,7 +6,7 @@ export const createTeamSchema = z.object({
 	tournamentId: z.string().optional(),
 	placeId: z.string().uuid({ message: "Invalid Place ID" }).optional(),
 	coach: z.string().optional().nullable(),
-	crestUrl: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")).nullable(),
+	crestUrl: z.string().optional().or(z.literal("")).nullable(),
 	kitColor: z.string().optional().nullable(),
 	kitPattern: z
 		.enum(["solid", "horizontal-stripes", "vertical-stripes", "quartered", "sash"])
@@ -33,7 +33,7 @@ export const updateTeamSchema = z.object({
 	playerIds: z.array(z.string()).optional(),
 	placeId: z.string().uuid({ message: "Invalid Place ID" }).optional().nullable(),
 	coach: z.string().optional().nullable(),
-	crestUrl: z.string().url({ message: "Invalid URL" }).optional().or(z.literal("")).nullable(),
+	crestUrl: z.string().optional().or(z.literal("")).nullable(),
 	kitColor: z.string().optional().nullable(),
 	kitPattern: z
 		.enum(["solid", "horizontal-stripes", "vertical-stripes", "quartered", "sash"])
