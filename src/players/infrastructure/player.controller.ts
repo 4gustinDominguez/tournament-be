@@ -35,12 +35,12 @@ export class PlayerController {
 				name,
 				nickname,
 				teamId,
-				position,
-				height,
-				weight,
-				photoUrl,
-				socialMedia,
-				statistics,
+				position ?? undefined,
+				height ?? undefined,
+				weight ?? undefined,
+				photoUrl ?? undefined,
+				socialMedia ?? undefined,
+				statistics ?? undefined,
 			);
 			res.status(201).json(newPlayer);
 		} catch (error: unknown) {
@@ -69,7 +69,10 @@ export class PlayerController {
 	async updatePlayer(req: Request, res: Response): Promise<void> {
 		try {
 			const { id } = req.params;
-			const updates = updatePlayerSchema.parse(req.body);
+			const raw = updatePlayerSchema.parse(req.body);
+			const updates = Object.fromEntries(
+				Object.entries(raw).filter(([_, v]) => v !== null),
+			) as Partial<Omit<import("../../players/domain/player").Player, "id" | "tournaments">>;
 			const updatedPlayer = await this.playerUseCases.updatePlayer(id, updates);
 			res.json(updatedPlayer);
 		} catch (error: unknown) {

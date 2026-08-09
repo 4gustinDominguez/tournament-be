@@ -25,13 +25,14 @@ export class RefereeController {
 
 				return;
 			}
-			const { name, tournamentIds, userId } = createRefereeSchema.parse(req.body);
+			const { name, tournamentIds, userId, photoUrl } = createRefereeSchema.parse(req.body);
 			const referee = await this.refereeUseCases.createReferee(
 				name,
 				tournamentIds,
 				user.id,
 				user.role,
 				userId,
+				photoUrl ?? undefined,
 			);
 			res.status(201).json(referee);
 		} catch (error: unknown) {
@@ -96,7 +97,7 @@ export class RefereeController {
 				return;
 			}
 			const { id } = req.params;
-			const { name, tournamentIds, userId } = updateRefereeSchema.parse(req.body);
+			const { name, tournamentIds, userId, photoUrl } = updateRefereeSchema.parse(req.body);
 			const referee = await this.refereeUseCases.updateReferee(
 				id,
 				name,
@@ -104,6 +105,7 @@ export class RefereeController {
 				user.id,
 				user.role,
 				userId,
+				photoUrl ?? undefined,
 			);
 			res.json(referee);
 		} catch (error: unknown) {

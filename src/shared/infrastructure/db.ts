@@ -70,7 +70,8 @@ CREATE TABLE IF NOT EXISTS referees (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
   tournament_ids TEXT[] NOT NULL DEFAULT '{}',
-  user_id TEXT
+  user_id TEXT,
+  photo_url TEXT
 );
 
 CREATE TABLE IF NOT EXISTS matches (

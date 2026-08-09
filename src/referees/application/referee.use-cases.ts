@@ -16,6 +16,7 @@ export class RefereeUseCases {
 		requesterId: string,
 		requesterRole: string,
 		userId?: string,
+		photoUrl?: string,
 	): Promise<Referee> {
 		if (this.tournamentUseCases && tournamentIds.length > 0) {
 			// Check ownership of ALL tournaments
@@ -32,6 +33,7 @@ export class RefereeUseCases {
 			name,
 			tournamentIds,
 			userId,
+			photoUrl,
 		};
 		await this.refereeRepository.save(referee);
 
@@ -57,6 +59,7 @@ export class RefereeUseCases {
 		requesterId: string,
 		requesterRole: string,
 		userId?: string,
+		photoUrl?: string,
 	): Promise<Referee> {
 		const referee = await this.refereeRepository.findById(id);
 		if (!referee) {
@@ -112,6 +115,7 @@ export class RefereeUseCases {
 		referee.name = name;
 		referee.tournamentIds = tournamentIds;
 		referee.userId = userId;
+		referee.photoUrl = photoUrl;
 		await this.refereeRepository.save(referee);
 
 		return referee;

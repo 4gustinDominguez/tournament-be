@@ -9,6 +9,7 @@ function toReferee(row: any): Referee {
 		name: row.name,
 		tournamentIds: row.tournament_ids ?? [],
 		userId: row.user_id,
+		photoUrl: row.photo_url,
 	};
 }
 
@@ -17,13 +18,14 @@ export class PostgresRefereeRepository implements RefereeRepository {
 
 	async save(referee: Referee): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO referees (id, name, tournament_ids, user_id)
-       VALUES ($1, $2, $3, $4)
+			`INSERT INTO referees (id, name, tournament_ids, user_id, photo_url)
+       VALUES ($1, $2, $3, $4, $5)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          tournament_ids = EXCLUDED.tournament_ids,
-         user_id = EXCLUDED.user_id`,
-			[referee.id, referee.name, referee.tournamentIds, referee.userId],
+         user_id = EXCLUDED.user_id,
+         photo_url = EXCLUDED.photo_url`,
+			[referee.id, referee.name, referee.tournamentIds, referee.userId, referee.photoUrl],
 		);
 	}
 
