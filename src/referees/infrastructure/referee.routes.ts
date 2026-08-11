@@ -35,7 +35,7 @@ router.post(
 router.put(
 	"/:id",
 	isAuthenticated,
-	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN, UserRole.REFEREE]),
 	(req, res) => refereeController.updateReferee(req, res),
 );
 router.delete(

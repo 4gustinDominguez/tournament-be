@@ -66,7 +66,10 @@ export class RefereeUseCases {
 			throw new Error("Referee not found");
 		}
 
-		if (this.tournamentUseCases) {
+		// Allow referees to update their own profile (photo)
+		const isSelfUpdate = referee.userId === requesterId;
+
+		if (this.tournamentUseCases && !isSelfUpdate) {
 			// 1. Check ownership of newly added tournaments
 			const addedTournaments = tournamentIds.filter((tid) => !referee.tournamentIds.includes(tid));
 			for (const tid of addedTournaments) {

@@ -74,6 +74,8 @@ CREATE TABLE IF NOT EXISTS referees (
   photo_url TEXT
 );
 
+ALTER TABLE referees ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
 CREATE TABLE IF NOT EXISTS matches (
   id TEXT PRIMARY KEY,
   tournament_id TEXT NOT NULL,

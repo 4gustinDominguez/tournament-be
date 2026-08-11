@@ -31,7 +31,7 @@ export class RefereeController {
 				tournamentIds,
 				user.id,
 				user.role,
-				userId,
+				userId ?? undefined,
 				photoUrl ?? undefined,
 			);
 			res.status(201).json(referee);
@@ -104,7 +104,7 @@ export class RefereeController {
 				tournamentIds,
 				user.id,
 				user.role,
-				userId,
+				userId ?? undefined,
 				photoUrl ?? undefined,
 			);
 			res.json(referee);
