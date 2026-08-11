@@ -56,7 +56,7 @@ export class PostgresTeamRepository implements TeamRepository {
 				team.crestUrl,
 				team.kitColor,
 				team.kitPattern,
-				team.kitColors,
+				team.kitColors ?? [],
 				team.formation,
 			],
 		);

@@ -151,7 +151,7 @@ export class MatchController {
 				status,
 				result ?? undefined,
 				incidents ?? undefined,
-				notes,
+				notes ?? undefined,
 			);
 
 			res.json({ ...updatedMatch, _debug: { result } });

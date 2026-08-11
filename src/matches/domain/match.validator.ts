@@ -35,7 +35,7 @@ export const updateMatchSchema = z.object({
 		.nullable()
 		.optional(),
 	incidents: z.array(matchIncidentSchema).optional(),
-	notes: z.string().optional(),
+	notes: z.string().nullable().optional(),
 });
 
 export const addResultSchema = z.object({
