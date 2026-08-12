@@ -22,6 +22,7 @@ const statisticsSchema = z
 export const createPlayerSchema = z.object({
 	name: z.string().min(1, { message: "Name is required" }),
 	nickname: z.string().min(1, { message: "Nickname is required" }),
+	dorsal: z.number().int().min(0).max(99).nullable().optional(),
 	teamId: z.string().optional(),
 	position: z.string().optional(),
 	height: z.number().positive().optional().nullable(),
@@ -29,17 +30,21 @@ export const createPlayerSchema = z.object({
 	photoUrl: z.string().url().optional().or(z.literal("")).nullable(),
 	socialMedia: socialMediaSchema,
 	statistics: statisticsSchema,
+	userId: z.string().uuid().nullable().optional(),
 });
 
 export const updatePlayerSchema = z
 	.object({
 		name: z.string().min(1).optional(),
 		nickname: z.string().min(1).optional(),
+		dorsal: z.number().int().min(0).max(99).nullable().optional(),
 		position: z.string().optional(),
 		height: z.number().positive().optional().nullable(),
 		weight: z.number().positive().optional().nullable(),
 		photoUrl: z.string().url().optional().or(z.literal("")).nullable(),
 		socialMedia: socialMediaSchema,
 		statistics: statisticsSchema,
+		userId: z.string().uuid().nullable().optional(),
+		fullRegistered: z.boolean().optional(),
 	})
 	.partial();

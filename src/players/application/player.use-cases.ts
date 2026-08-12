@@ -24,6 +24,8 @@ export class PlayerUseCases {
 		photoUrl?: string,
 		socialMedia?: Player["socialMedia"],
 		statistics?: Player["statistics"],
+		dorsal?: number,
+		userId?: string,
 	): Promise<Player> {
 		if (!name) {
 			throw new Error("Player name cannot be empty");
@@ -38,6 +40,7 @@ export class PlayerUseCases {
 			id: uuidv4(),
 			name,
 			nickname,
+			dorsal,
 			tournaments: [],
 			position,
 			height,
@@ -52,6 +55,8 @@ export class PlayerUseCases {
 				redCards: 0,
 				minutesPlayed: 0,
 			},
+			userId,
+			fullRegistered: false,
 		};
 		await this.playerRepository.save(newPlayer);
 
@@ -66,9 +71,14 @@ export class PlayerUseCases {
 		return this.playerRepository.findById(id);
 	}
 
+	async getPlayerByUserId(userId: string): Promise<Player | null> {
+		return this.playerRepository.findByUserId(userId);
+	}
+
 	async updatePlayer(
 		id: string,
 		updates: Partial<Omit<Player, "id" | "tournaments">>,
+		requesterId?: string,
 	): Promise<Player> {
 		const player = await this.playerRepository.findById(id);
 		if (!player) {
@@ -117,6 +127,24 @@ export class PlayerUseCases {
 		if (!player) {
 			throw new Error("Player not found");
 		}
+
+		// Remove player from all teams' playerIds
+		if (this.teamUseCases) {
+			const teams = await this.teamUseCases.getAllTeams();
+			for (const team of teams) {
+				if (team.playerIds.includes(id)) {
+					team.playerIds = team.playerIds.filter((pid) => pid !== id);
+					await this.teamUseCases.updateTeam(
+						team.id,
+						team.name,
+						"", // requesterId
+						"", // requesterRole
+						team.playerIds,
+					);
+				}
+			}
+		}
+
 		await this.playerRepository.delete(id);
 	}
 }

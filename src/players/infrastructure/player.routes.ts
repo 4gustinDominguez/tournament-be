@@ -18,6 +18,7 @@ router.get("/players", playerController.getAllPlayers.bind(playerController));
 router.get("/players/:id", playerController.getPlayerById.bind(playerController));
 
 // Protected Routes
+router.get("/players/me", isAuthenticated, (req, res) => playerController.getMe(req, res));
 router.post(
 	"/players",
 	isAuthenticated,

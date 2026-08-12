@@ -26,4 +26,8 @@ export class InMemoryPlayerRepository implements PlayerRepository {
 	async delete(id: string): Promise<void> {
 		this.players = this.players.filter((p) => p.id !== id);
 	}
+
+	async findByUserId(userId: string): Promise<Player | null> {
+		return this.players.find((p) => p.userId === userId) ?? null;
+	}
 }

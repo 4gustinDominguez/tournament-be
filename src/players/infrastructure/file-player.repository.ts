@@ -54,4 +54,10 @@ export class FilePlayerRepository implements PlayerRepository {
 		await this.ensureDataDir();
 		await fs.writeFile(PLAYERS_FILE_PATH, JSON.stringify(filteredPlayers, null, 2));
 	}
+
+	async findByUserId(userId: string): Promise<Player | null> {
+		const players = await this.getAll();
+
+		return players.find((p) => p.userId === userId) ?? null;
+	}
 }
