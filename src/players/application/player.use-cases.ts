@@ -1,6 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
 
+import { Match } from "../../matches/domain/match";
+import { MatchRepository } from "../../matches/domain/match.repository";
 import { TeamUseCases } from "../../teams/application/team.use-cases";
+import { Team } from "../../teams/domain/team";
+import { TournamentUseCases } from "../../tournaments/application/tournament.use-cases";
 import { Player } from "../domain/player";
 import { PlayerRepository } from "../domain/player.repository";
 
@@ -8,6 +12,8 @@ export class PlayerUseCases {
 	constructor(
 		private readonly playerRepository: PlayerRepository,
 		private readonly teamUseCases?: TeamUseCases,
+		private readonly tournamentUseCases?: TournamentUseCases,
+		private readonly matchRepository?: MatchRepository,
 	) {}
 
 	async getAllPlayers(): Promise<Player[]> {
@@ -78,7 +84,7 @@ export class PlayerUseCases {
 	async updatePlayer(
 		id: string,
 		updates: Partial<Omit<Player, "id" | "tournaments">>,
-		requesterId?: string,
+		_requesterId?: string,
 	): Promise<Player> {
 		const player = await this.playerRepository.findById(id);
 		if (!player) {
@@ -146,5 +152,31 @@ export class PlayerUseCases {
 		}
 
 		await this.playerRepository.delete(id);
+	}
+
+	async getTeamsByPlayerUserId(userId: string): Promise<Team[]> {
+		const player = await this.playerRepository.findByUserId(userId);
+		if (!player) {
+			return [];
+		}
+
+		if (!this.teamUseCases) {
+			return [];
+		}
+
+		const allTeams = await this.teamUseCases.getAllTeams();
+
+		return allTeams.filter((team) => team.playerIds.includes(player.id));
+	}
+
+	async getMatchesByPlayerUserId(userId: string): Promise<Match[]> {
+		const teams = await this.getTeamsByPlayerUserId(userId);
+		if (teams.length === 0 || !this.matchRepository) {
+			return [];
+		}
+
+		const teamIds = teams.map((t) => t.id);
+
+		return this.matchRepository.getMatchesByTeamIds(teamIds);
 	}
 }

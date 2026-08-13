@@ -67,6 +67,18 @@ export class PostgresMatchRepository implements MatchRepository {
 		return rows.map(toMatch);
 	}
 
+	async getMatchesByTeamIds(teamIds: string[]): Promise<Match[]> {
+		if (teamIds.length === 0) {
+			return [];
+		}
+		const { rows } = await this.pool.query(
+			"SELECT * FROM matches WHERE team_a_id = ANY($1) OR team_b_id = ANY($1)",
+			[teamIds],
+		);
+
+		return rows.map(toMatch);
+	}
+
 	async getMatchById(id: string): Promise<Match | null> {
 		const { rows } = await this.pool.query("SELECT * FROM matches WHERE id = $1", [id]);
 

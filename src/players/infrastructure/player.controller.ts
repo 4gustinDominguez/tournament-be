@@ -135,4 +135,38 @@ export class PlayerController {
 			}
 		}
 	}
+
+	async getMyTeams(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
+			const teams = await this.playerUseCases.getTeamsByPlayerUserId(user.id);
+			res.json(teams);
+		} catch (error: unknown) {
+			res
+				.status(500)
+				.json({ message: error instanceof Error ? error.message : "Error fetching teams" });
+		}
+	}
+
+	async getMyMatches(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
+			const matches = await this.playerUseCases.getMatchesByPlayerUserId(user.id);
+			res.json(matches);
+		} catch (error: unknown) {
+			res
+				.status(500)
+				.json({ message: error instanceof Error ? error.message : "Error fetching matches" });
+		}
+	}
 }

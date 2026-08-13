@@ -22,6 +22,7 @@ const teamController = new TeamController(teamUseCases);
 // Public Routes
 router.get("/teams", teamController.getAllTeams.bind(teamController));
 router.get("/teams/:id", teamController.getTeamById.bind(teamController));
+router.get("/teams/:id/public", teamController.getTeamPublicInfo.bind(teamController));
 
 // Protected Routes
 router.post(
@@ -42,5 +43,6 @@ router.delete(
 	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
 	teamController.deleteTeam.bind(teamController),
 );
+router.post("/teams/claim", isAuthenticated, teamController.claimPlayer.bind(teamController));
 
 export default router;

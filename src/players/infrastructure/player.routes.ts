@@ -4,13 +4,20 @@ import { UserRole } from "../../auth/domain/user";
 import { hasRole, isAuthenticated } from "../../auth/infrastructure/auth.middleware";
 import { repositories } from "../../shared/infrastructure/repository.factory";
 import { teamUseCases } from "../../teams/infrastructure/team.routes";
+import { tournamentUseCases } from "../../tournaments/infrastructure/tournament.routes";
 import { PlayerUseCases } from "../application/player.use-cases";
 import { PlayerController } from "./player.controller";
 
 const router = Router();
 
 const playerRepository = repositories.player;
-export const playerUseCases = new PlayerUseCases(playerRepository, teamUseCases);
+const matchRepository = repositories.match;
+export const playerUseCases = new PlayerUseCases(
+	playerRepository,
+	teamUseCases,
+	tournamentUseCases,
+	matchRepository,
+);
 const playerController = new PlayerController(playerUseCases);
 
 // Public Routes
@@ -19,6 +26,12 @@ router.get("/players/:id", playerController.getPlayerById.bind(playerController)
 
 // Protected Routes
 router.get("/players/me", isAuthenticated, (req, res) => playerController.getMe(req, res));
+router.get("/players/me/teams", isAuthenticated, (req, res) =>
+	playerController.getMyTeams(req, res),
+);
+router.get("/players/me/matches", isAuthenticated, (req, res) =>
+	playerController.getMyMatches(req, res),
+);
 router.post(
 	"/players",
 	isAuthenticated,

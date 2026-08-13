@@ -138,6 +138,7 @@ Given(
 			name: playerName,
 			nickname: playerName,
 			tournaments: [tournament.id],
+			fullRegistered: false,
 		};
 		await repositories.player.save(player);
 
@@ -146,6 +147,7 @@ Given(
 			name: teamName,
 			playerIds: [player.id],
 			tournaments: [tournament.id],
+			publicRegistration: false,
 		};
 		await repositories.team.save(team);
 	},
@@ -161,6 +163,7 @@ Given(
 			name: teamName,
 			playerIds: [],
 			tournaments: [tournament.id, "other-tournament-id"],
+			publicRegistration: false,
 		};
 		await repositories.team.save(team);
 	},

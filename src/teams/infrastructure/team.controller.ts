@@ -47,6 +47,7 @@ export class TeamController {
 				kitPattern,
 				kitColors,
 				formation,
+				publicRegistration,
 			} = createTeamSchema.parse(req.body);
 
 			if (!tournamentId) {
@@ -68,6 +69,7 @@ export class TeamController {
 				kitPattern ?? undefined,
 				kitColors ?? undefined,
 				formation ?? undefined,
+				publicRegistration,
 			);
 			res.status(201).json(newTeam);
 		} catch (error: unknown) {
@@ -117,6 +119,7 @@ export class TeamController {
 				kitPattern,
 				kitColors,
 				formation,
+				publicRegistration,
 			} = updateTeamSchema.parse(req.body);
 			const updatedTeam = await this.teamUseCases.updateTeam(
 				id,
@@ -131,6 +134,7 @@ export class TeamController {
 				kitPattern ?? undefined,
 				kitColors ?? undefined,
 				formation ?? undefined,
+				publicRegistration,
 			);
 			if (updatedTeam) {
 				res.json(updatedTeam);
@@ -164,6 +168,46 @@ export class TeamController {
 				res.status(403).json({ message: error.message });
 			} else {
 				res.status(500).json({ message: "Error deleting team" });
+			}
+		}
+	}
+
+	async getTeamPublicInfo(req: Request, res: Response): Promise<void> {
+		try {
+			const { id } = req.params;
+			const result = await this.teamUseCases.getTeamPublicInfo(id);
+			if (!result) {
+				res.status(404).json({ message: "Team not found or public registration not enabled" });
+
+				return;
+			}
+			res.json(result);
+		} catch (_error) {
+			res.status(500).json({ message: "Error fetching team public info" });
+		}
+	}
+
+	async claimPlayer(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
+			const { playerId } = req.body;
+			if (!playerId) {
+				res.status(400).json({ message: "Player ID is required" });
+
+				return;
+			}
+			await this.teamUseCases.claimPlayer(playerId, user.id);
+			res.json({ message: "Player claimed successfully" });
+		} catch (error: unknown) {
+			if (error instanceof Error && error.message === "Player already claimed by another user") {
+				res.status(409).json({ message: error.message });
+			} else {
+				res.status(500).json({ message: "Error claiming player" });
 			}
 		}
 	}

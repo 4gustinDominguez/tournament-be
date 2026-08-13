@@ -26,6 +26,7 @@ export const createTeamSchema = z.object({
 		})
 		.optional()
 		.nullable(),
+	publicRegistration: z.boolean().optional(),
 });
 
 export const updateTeamSchema = z.object({
@@ -53,4 +54,5 @@ export const updateTeamSchema = z.object({
 		})
 		.optional()
 		.nullable(),
+	publicRegistration: z.boolean().optional(),
 });

@@ -17,6 +17,7 @@ function toTeam(row: any): Team {
 		kitPattern: row.kit_pattern,
 		kitColors: row.kit_colors ?? [],
 		formation: row.formation,
+		publicRegistration: row.public_registration ?? false,
 	};
 }
 
@@ -31,8 +32,8 @@ export class PostgresTeamRepository implements TeamRepository {
 
 	async save(team: Team): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO teams (id, name, player_ids, logo, tournaments, place_id, coach, crest_url, kit_color, kit_pattern, kit_colors, formation)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+			`INSERT INTO teams (id, name, player_ids, logo, tournaments, place_id, coach, crest_url, kit_color, kit_pattern, kit_colors, formation, public_registration)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          player_ids = EXCLUDED.player_ids,
@@ -44,7 +45,8 @@ export class PostgresTeamRepository implements TeamRepository {
          kit_color = EXCLUDED.kit_color,
          kit_pattern = EXCLUDED.kit_pattern,
          kit_colors = EXCLUDED.kit_colors,
-         formation = EXCLUDED.formation`,
+         formation = EXCLUDED.formation,
+         public_registration = EXCLUDED.public_registration`,
 			[
 				team.id,
 				team.name,
@@ -58,6 +60,7 @@ export class PostgresTeamRepository implements TeamRepository {
 				team.kitPattern,
 				team.kitColors ?? [],
 				team.formation,
+				team.publicRegistration,
 			],
 		);
 	}

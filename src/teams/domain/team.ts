@@ -18,4 +18,5 @@ export interface Team {
 		formationType: string;
 		positions: Record<string, string | null>;
 	};
+	publicRegistration: boolean;
 }

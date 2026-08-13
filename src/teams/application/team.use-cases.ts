@@ -55,6 +55,7 @@ export class TeamUseCases {
 			formationType: string;
 			positions: Record<string, string | null>;
 		},
+		publicRegistration?: boolean,
 	): Promise<Team | null> {
 		if (this.tournamentUseCases) {
 			await this.tournamentUseCases.verifyTournamentOwnership(
@@ -83,6 +84,7 @@ export class TeamUseCases {
 			kitPattern,
 			kitColors,
 			formation,
+			publicRegistration: publicRegistration ?? false,
 		};
 		await this.teamRepository.save(newTeam);
 
@@ -126,6 +128,7 @@ export class TeamUseCases {
 			formationType: string;
 			positions: Record<string, string | null>;
 		},
+		publicRegistration?: boolean,
 	): Promise<Team | null> {
 		const team = await this.teamRepository.findById(id);
 		if (!team) {
@@ -166,6 +169,9 @@ export class TeamUseCases {
 		}
 		if (formation !== undefined) {
 			team.formation = formation;
+		}
+		if (publicRegistration !== undefined) {
+			team.publicRegistration = publicRegistration;
 		}
 		await this.teamRepository.save(team);
 
@@ -214,5 +220,57 @@ export class TeamUseCases {
 		}
 
 		await this.teamRepository.deleteById(id);
+	}
+
+	async getTeamPublicInfo(teamId: string): Promise<{
+		team: Team;
+		players: Array<{
+			id: string;
+			name: string;
+			nickname: string;
+			dorsal?: number;
+			registered: boolean;
+		}>;
+	} | null> {
+		const team = await this.teamRepository.findById(teamId);
+		if (!team || !team.publicRegistration) {
+			return null;
+		}
+
+		const players = await Promise.all(
+			team.playerIds.map(async (id) => {
+				const player = await this.playerRepository.findById(id);
+				if (!player) {
+					return null;
+				}
+
+				return {
+					id: player.id,
+					name: player.name,
+					nickname: player.nickname,
+					dorsal: player.dorsal,
+					registered: !!player.userId,
+				};
+			}),
+		);
+
+		return {
+			team,
+			players: players.filter((p): p is NonNullable<typeof p> => p !== null),
+		};
+	}
+
+	async claimPlayer(playerId: string, userId: string): Promise<void> {
+		const player = await this.playerRepository.findById(playerId);
+		if (!player) {
+			throw new Error("Player not found");
+		}
+
+		if (player.userId) {
+			throw new Error("Player already claimed by another user");
+		}
+
+		player.userId = userId;
+		await this.playerRepository.update(player);
 	}
 }

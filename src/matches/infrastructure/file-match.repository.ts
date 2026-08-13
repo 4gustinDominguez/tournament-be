@@ -46,6 +46,14 @@ export class FileMatchRepository implements MatchRepository {
 		return matches.filter((match) => match.refereeId === refereeId);
 	}
 
+	async getMatchesByTeamIds(teamIds: string[]): Promise<Match[]> {
+		const matches = await this.readDb();
+
+		return matches.filter(
+			(match) => teamIds.includes(match.teamAId) || teamIds.includes(match.teamBId),
+		);
+	}
+
 	async getMatchById(id: string): Promise<Match | null> {
 		const matches = await this.readDb();
 

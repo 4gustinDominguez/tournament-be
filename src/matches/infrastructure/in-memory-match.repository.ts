@@ -18,6 +18,12 @@ export class InMemoryMatchRepository implements MatchRepository {
 		return this.matches.filter((match) => match.refereeId === refereeId);
 	}
 
+	async getMatchesByTeamIds(teamIds: string[]): Promise<Match[]> {
+		return this.matches.filter(
+			(match) => teamIds.includes(match.teamAId) || teamIds.includes(match.teamBId),
+		);
+	}
+
 	async getMatchById(id: string): Promise<Match | null> {
 		return this.matches.find((match) => match.id === id) ?? null;
 	}
