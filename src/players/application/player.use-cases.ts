@@ -179,4 +179,57 @@ export class PlayerUseCases {
 
 		return this.matchRepository.getMatchesByTeamIds(teamIds);
 	}
+
+	async getStatsByPlayerUserId(
+		userId: string,
+	): Promise<Record<string, { team: Team; statistics: Player["statistics"] }>> {
+		const player = await this.playerRepository.findByUserId(userId);
+		if (!player) {
+			return {};
+		}
+
+		const teams = await this.getTeamsByPlayerUserId(userId);
+		if (teams.length === 0 || !this.matchRepository) {
+			return {};
+		}
+
+		const teamIds = teams.map((t) => t.id);
+		const matches = await this.matchRepository.getMatchesByTeamIds(teamIds);
+		const completedMatches = matches.filter((m) => m.status === "completed");
+
+		const result: Record<string, { team: Team; statistics: Player["statistics"] }> = {};
+
+		for (const team of teams) {
+			const stats: Player["statistics"] = {
+				matchesPlayed: 0,
+				goals: 0,
+				assists: 0,
+				yellowCards: 0,
+				redCards: 0,
+				minutesPlayed: 0,
+			};
+
+			for (const match of completedMatches) {
+				const isTeamA = match.teamAId === team.id;
+				const isTeamB = match.teamBId === team.id;
+				if (!isTeamA && !isTeamB) continue;
+
+				const playerIncidents = match.incidents.filter(
+					(inc) => inc.playerId === player.id && inc.teamId === team.id,
+				);
+
+				stats.matchesPlayed += 1;
+
+				for (const inc of playerIncidents) {
+					if (inc.type === "GOAL") stats.goals += 1;
+					if (inc.type === "YELLOW_CARD") stats.yellowCards += 1;
+					if (inc.type === "RED_CARD") stats.redCards += 1;
+				}
+			}
+
+			result[team.id] = { team, statistics: stats };
+		}
+
+		return result;
+	}
 }

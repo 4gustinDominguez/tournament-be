@@ -28,6 +28,9 @@ router.get("/players/me/teams", isAuthenticated, (req, res) =>
 router.get("/players/me/matches", isAuthenticated, (req, res) =>
 	playerController.getMyMatches(req, res),
 );
+router.get("/players/me/stats", isAuthenticated, (req, res) =>
+	playerController.getMyStats(req, res),
+);
 
 // Public Routes
 router.get("/players", playerController.getAllPlayers.bind(playerController));

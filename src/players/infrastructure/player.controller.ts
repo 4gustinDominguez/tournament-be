@@ -169,4 +169,21 @@ export class PlayerController {
 				.json({ message: error instanceof Error ? error.message : "Error fetching matches" });
 		}
 	}
+
+	async getMyStats(req: Request, res: Response): Promise<void> {
+		try {
+			const user = (req as AuthRequest).user;
+			if (!user) {
+				res.status(401).json({ message: "Unauthorized" });
+
+				return;
+			}
+			const stats = await this.playerUseCases.getStatsByPlayerUserId(user.id);
+			res.json(stats);
+		} catch (error: unknown) {
+			res
+				.status(500)
+				.json({ message: error instanceof Error ? error.message : "Error fetching stats" });
+		}
+	}
 }
