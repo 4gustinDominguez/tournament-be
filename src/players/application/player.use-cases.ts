@@ -212,7 +212,9 @@ export class PlayerUseCases {
 			for (const match of completedMatches) {
 				const isTeamA = match.teamAId === team.id;
 				const isTeamB = match.teamBId === team.id;
-				if (!isTeamA && !isTeamB) continue;
+				if (!isTeamA && !isTeamB) {
+					continue;
+				}
 
 				const playerIncidents = match.incidents.filter(
 					(inc) => inc.playerId === player.id && inc.teamId === team.id,
@@ -221,9 +223,15 @@ export class PlayerUseCases {
 				stats.matchesPlayed += 1;
 
 				for (const inc of playerIncidents) {
-					if (inc.type === "GOAL") stats.goals += 1;
-					if (inc.type === "YELLOW_CARD") stats.yellowCards += 1;
-					if (inc.type === "RED_CARD") stats.redCards += 1;
+					if (inc.type === "GOAL") {
+						stats.goals += 1;
+					}
+					if (inc.type === "YELLOW_CARD") {
+						stats.yellowCards += 1;
+					}
+					if (inc.type === "RED_CARD") {
+						stats.redCards += 1;
+					}
 				}
 			}
 

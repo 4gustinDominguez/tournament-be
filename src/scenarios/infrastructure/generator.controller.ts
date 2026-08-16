@@ -22,6 +22,7 @@ const generationSchema = z.object({
 	playersPerTeam: z.coerce.number().int().min(5).max(25),
 	placesCount: z.coerce.number().int().min(0).max(10),
 	refereesCount: z.coerce.number().int().min(0).max(10),
+	mode: z.enum(["random", "guided"]).optional(),
 });
 
 export class GeneratorController {
