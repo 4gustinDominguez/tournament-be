@@ -26,6 +26,10 @@ router.get(
 	isAuthenticated,
 	tournamentController.getMyTournaments.bind(tournamentController),
 );
+router.get(
+	"/tournaments/slug/:slug",
+	tournamentController.getTournamentBySlug.bind(tournamentController),
+);
 router.post(
 	"/tournaments",
 	isAuthenticated,

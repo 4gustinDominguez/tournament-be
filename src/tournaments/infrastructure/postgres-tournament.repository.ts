@@ -7,6 +7,7 @@ function toTournament(row: any): Tournament {
 	return {
 		id: row.id,
 		name: row.name,
+		slug: row.slug,
 		startDate: row.start_date,
 		endDate: row.end_date,
 		location: row.location,
@@ -34,12 +35,13 @@ export class PostgresTournamentRepository implements TournamentRepository {
 
 	async save(tournament: Tournament): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO tournaments (id, name, start_date, end_date, location, team_ids, owner_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)
+			`INSERT INTO tournaments (id, name, slug, start_date, end_date, location, team_ids, owner_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
        ON CONFLICT (id) DO NOTHING`,
 			[
 				tournament.id,
 				tournament.name,
+				tournament.slug ?? null,
 				tournament.startDate,
 				tournament.endDate,
 				tournament.location,
@@ -55,15 +57,22 @@ export class PostgresTournamentRepository implements TournamentRepository {
 		return rows[0] ? toTournament(rows[0]) : null;
 	}
 
+	async findBySlug(slug: string): Promise<Tournament | null> {
+		const { rows } = await this.pool.query("SELECT * FROM tournaments WHERE slug = $1", [slug]);
+
+		return rows[0] ? toTournament(rows[0]) : null;
+	}
+
 	async update(tournament: Tournament): Promise<void> {
 		await this.pool.query(
 			`UPDATE tournaments SET
-         name = $2, start_date = $3, end_date = $4, location = $5,
-         team_ids = $6, owner_id = $7
+         name = $2, slug = $3, start_date = $4, end_date = $5, location = $6,
+         team_ids = $7, owner_id = $8
        WHERE id = $1`,
 			[
 				tournament.id,
 				tournament.name,
+				tournament.slug ?? null,
 				tournament.startDate,
 				tournament.endDate,
 				tournament.location,

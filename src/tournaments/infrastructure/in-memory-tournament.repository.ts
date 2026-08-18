@@ -25,6 +25,10 @@ export class InMemoryTournamentRepository implements TournamentRepository {
 		return this.tournaments.find((t) => t.id === id) ?? null;
 	}
 
+	async findBySlug(slug: string): Promise<Tournament | null> {
+		return this.tournaments.find((t) => t.slug === slug) ?? null;
+	}
+
 	async update(tournament: Tournament): Promise<void> {
 		const index = this.tournaments.findIndex((t) => t.id === tournament.id);
 		if (index !== -1) {

@@ -9,6 +9,17 @@ import { TeamRepository } from "../../teams/domain/team.repository";
 import { Tournament } from "../domain/tournament";
 import { TournamentRepository } from "../domain/tournament.repository";
 
+function slugify(name: string): string {
+	return name
+		.toLowerCase()
+		.normalize("NFD")
+		.replace(/[\u0300-\u036f]/g, "")
+		.replace(/[^a-z0-9\s-]/g, "")
+		.replace(/\s+/g, "-")
+		.replace(/-+/g, "-")
+		.replace(/^-|-$/g, "");
+}
+
 export class TournamentUseCases {
 	constructor(
 		private readonly tournamentRepository: TournamentRepository,
@@ -61,6 +72,7 @@ export class TournamentUseCases {
 		const newTournament: Tournament = {
 			id: uuidv4(),
 			name,
+			slug: slugify(name),
 			startDate,
 			endDate,
 			location: location ?? "",
@@ -74,6 +86,10 @@ export class TournamentUseCases {
 
 	async getTournamentById(id: string): Promise<Tournament | null> {
 		return this.tournamentRepository.findById(id);
+	}
+
+	async getTournamentBySlug(slug: string): Promise<Tournament | null> {
+		return this.tournamentRepository.findBySlug(slug);
 	}
 
 	async updateTournament(
@@ -100,6 +116,7 @@ export class TournamentUseCases {
 		}
 
 		tournament.name = name;
+		tournament.slug = slugify(name);
 		tournament.startDate = startDate;
 		tournament.endDate = endDate;
 		tournament.location = location ?? tournament.location;

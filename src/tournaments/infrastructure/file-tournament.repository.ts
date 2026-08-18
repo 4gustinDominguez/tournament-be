@@ -50,6 +50,13 @@ export class FileTournamentRepository implements TournamentRepository {
 		return tournament ?? null;
 	}
 
+	async findBySlug(slug: string): Promise<Tournament | null> {
+		const tournaments = await this.getAll();
+		const tournament = tournaments.find((t) => t.slug === slug);
+
+		return tournament ?? null;
+	}
+
 	async update(tournament: Tournament): Promise<void> {
 		const tournaments = await this.getAll();
 		const index = tournaments.findIndex((t) => t.id === tournament.id);

@@ -82,6 +82,20 @@ export class TournamentController {
 		}
 	}
 
+	async getTournamentBySlug(req: Request, res: Response): Promise<void> {
+		try {
+			const { slug } = req.params;
+			const tournament = await this.tournamentUseCases.getTournamentBySlug(slug);
+			if (tournament) {
+				res.json(tournament);
+			} else {
+				res.status(404).json({ message: "Tournament not found" });
+			}
+		} catch (_error) {
+			res.status(500).json({ message: "Error fetching tournament" });
+		}
+	}
+
 	async updateTournament(req: Request, res: Response): Promise<void> {
 		try {
 			const user = (req as AuthRequest).user;
