@@ -36,6 +36,7 @@ export const updateMatchSchema = z.object({
 		.optional(),
 	incidents: z.array(matchIncidentSchema).optional(),
 	notes: z.string().nullable().optional(),
+	presentPlayerIds: z.array(z.string().uuid()).optional(),
 });
 
 export const addResultSchema = z.object({

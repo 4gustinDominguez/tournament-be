@@ -136,8 +136,18 @@ export class MatchController {
 			}
 			const { id } = req.params;
 			const parsed = updateMatchSchema.parse(req.body);
-			const { teamAId, teamBId, date, placeId, refereeId, status, result, incidents, notes } =
-				parsed;
+			const {
+				teamAId,
+				teamBId,
+				date,
+				placeId,
+				refereeId,
+				status,
+				result,
+				incidents,
+				notes,
+				presentPlayerIds,
+			} = parsed;
 
 			const updatedMatch = await this.matchUseCases.updateMatch(
 				id,
@@ -152,6 +162,7 @@ export class MatchController {
 				result ?? undefined,
 				incidents ?? undefined,
 				notes ?? undefined,
+				presentPlayerIds ?? undefined,
 			);
 
 			res.json({ ...updatedMatch, _debug: { result } });

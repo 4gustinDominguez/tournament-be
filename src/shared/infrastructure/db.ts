@@ -15,6 +15,7 @@ CREATE TABLE IF NOT EXISTS users (
 CREATE TABLE IF NOT EXISTS tournaments (
   id TEXT PRIMARY KEY,
   name TEXT NOT NULL,
+  slug TEXT UNIQUE,
   start_date TIMESTAMPTZ,
   end_date TIMESTAMPTZ,
   location TEXT,
@@ -82,6 +83,8 @@ ALTER TABLE players ADD COLUMN IF NOT EXISTS full_registered BOOLEAN NOT NULL DE
 
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS public_registration BOOLEAN NOT NULL DEFAULT false;
 
+ALTER TABLE matches ADD COLUMN IF NOT EXISTS present_player_ids JSONB NOT NULL DEFAULT '[]';
+
 CREATE TABLE IF NOT EXISTS matches (
   id TEXT PRIMARY KEY,
   tournament_id TEXT NOT NULL,
@@ -140,5 +143,19 @@ async function runMigrations(p: Pool): Promise<void> {
 		ADD COLUMN IF NOT EXISTS kit_pattern TEXT,
 		ADD COLUMN IF NOT EXISTS kit_colors TEXT[] NOT NULL DEFAULT '{}',
 		ADD COLUMN IF NOT EXISTS formation JSONB;
+	`);
+	await p.query(`
+		ALTER TABLE tournaments ADD COLUMN IF NOT EXISTS slug TEXT;
+	`);
+	await p.query(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM pg_constraint WHERE conname = 'tournaments_slug_key'
+			) THEN
+				ALTER TABLE tournaments ADD CONSTRAINT tournaments_slug_key UNIQUE (slug);
+			END IF;
+		END
+		$$;
 	`);
 }

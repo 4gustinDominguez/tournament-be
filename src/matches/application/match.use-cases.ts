@@ -129,6 +129,7 @@ export class MatchUseCases {
 		result?: MatchResult | null,
 		incidents?: Match["incidents"],
 		notes?: string,
+		presentPlayerIds?: string[],
 	): Promise<Match> {
 		const match = await this.matchRepository.getMatchById(id);
 		if (!match) {
@@ -180,6 +181,9 @@ export class MatchUseCases {
 		}
 		if (notes !== undefined) {
 			match.notes = notes;
+		}
+		if (presentPlayerIds !== undefined) {
+			match.presentPlayerIds = presentPlayerIds;
 		}
 
 		await this.matchRepository.updateMatch(match);

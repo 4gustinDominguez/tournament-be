@@ -20,6 +20,7 @@ function toMatch(row: any): Match {
 		placeId: row.place_id,
 		incidents: row.incidents ?? [],
 		notes: row.notes,
+		presentPlayerIds: row.present_player_ids ?? [],
 	};
 }
 
@@ -28,8 +29,8 @@ export class PostgresMatchRepository implements MatchRepository {
 
 	async createMatch(match: Match): Promise<Match> {
 		await this.pool.query(
-			`INSERT INTO matches (id, tournament_id, round_id, team_a_id, team_b_id, referee_id, score_a, score_b, status, date, place_id, incidents, notes)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13)
+			`INSERT INTO matches (id, tournament_id, round_id, team_a_id, team_b_id, referee_id, score_a, score_b, status, date, place_id, incidents, notes, present_player_ids)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13, $14::jsonb)
        ON CONFLICT (id) DO NOTHING`,
 			[
 				match.id,
@@ -45,6 +46,7 @@ export class PostgresMatchRepository implements MatchRepository {
 				match.placeId,
 				JSON.stringify(match.incidents),
 				match.notes,
+				JSON.stringify(match.presentPlayerIds ?? []),
 			],
 		);
 
@@ -99,7 +101,8 @@ export class PostgresMatchRepository implements MatchRepository {
 			`UPDATE matches SET
          tournament_id = $2, round_id = $3, team_a_id = $4, team_b_id = $5,
          referee_id = $6, score_a = $7, score_b = $8, status = $9,
-         date = $10, place_id = $11, incidents = $12::jsonb, notes = $13
+         date = $10, place_id = $11, incidents = $12::jsonb, notes = $13,
+         present_player_ids = $14::jsonb
        WHERE id = $1`,
 			[
 				match.id,
@@ -115,6 +118,7 @@ export class PostgresMatchRepository implements MatchRepository {
 				match.placeId,
 				JSON.stringify(match.incidents),
 				match.notes,
+				JSON.stringify(match.presentPlayerIds ?? []),
 			],
 		);
 	}

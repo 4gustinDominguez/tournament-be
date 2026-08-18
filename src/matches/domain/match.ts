@@ -25,4 +25,5 @@ export interface Match {
 	placeId?: string;
 	incidents: MatchIncident[];
 	notes?: string;
+	presentPlayerIds?: string[];
 }
