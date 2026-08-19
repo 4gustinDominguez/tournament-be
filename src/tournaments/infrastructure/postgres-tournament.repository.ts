@@ -13,6 +13,7 @@ function toTournament(row: any): Tournament {
 		location: row.location,
 		teamIds: row.team_ids ?? [],
 		ownerId: row.owner_id,
+		matchDurationMinutes: row.match_duration_minutes ?? undefined,
 	};
 }
 
@@ -35,8 +36,8 @@ export class PostgresTournamentRepository implements TournamentRepository {
 
 	async save(tournament: Tournament): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO tournaments (id, name, slug, start_date, end_date, location, team_ids, owner_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			`INSERT INTO tournaments (id, name, slug, start_date, end_date, location, team_ids, owner_id, match_duration_minutes)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
        ON CONFLICT (id) DO NOTHING`,
 			[
 				tournament.id,
@@ -47,6 +48,7 @@ export class PostgresTournamentRepository implements TournamentRepository {
 				tournament.location,
 				tournament.teamIds,
 				tournament.ownerId,
+				tournament.matchDurationMinutes ?? null,
 			],
 		);
 	}
@@ -67,7 +69,7 @@ export class PostgresTournamentRepository implements TournamentRepository {
 		await this.pool.query(
 			`UPDATE tournaments SET
          name = $2, slug = $3, start_date = $4, end_date = $5, location = $6,
-         team_ids = $7, owner_id = $8
+         team_ids = $7, owner_id = $8, match_duration_minutes = $9
        WHERE id = $1`,
 			[
 				tournament.id,
@@ -78,6 +80,7 @@ export class PostgresTournamentRepository implements TournamentRepository {
 				tournament.location,
 				tournament.teamIds,
 				tournament.ownerId,
+				tournament.matchDurationMinutes ?? null,
 			],
 		);
 	}

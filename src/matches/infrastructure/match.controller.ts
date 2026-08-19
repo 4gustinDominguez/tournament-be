@@ -147,6 +147,9 @@ export class MatchController {
 				incidents,
 				notes,
 				presentPlayerIds,
+				timerElapsedSeconds,
+				timerRunning,
+				timerStartedAt,
 			} = parsed;
 
 			const updatedMatch = await this.matchUseCases.updateMatch(
@@ -163,6 +166,9 @@ export class MatchController {
 				incidents ?? undefined,
 				notes ?? undefined,
 				presentPlayerIds ?? undefined,
+				timerElapsedSeconds,
+				timerRunning,
+				timerStartedAt,
 			);
 
 			res.json({ ...updatedMatch, _debug: { result } });

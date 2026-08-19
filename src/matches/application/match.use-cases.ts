@@ -130,6 +130,9 @@ export class MatchUseCases {
 		incidents?: Match["incidents"],
 		notes?: string,
 		presentPlayerIds?: string[],
+		timerElapsedSeconds?: number,
+		timerRunning?: boolean,
+		timerStartedAt?: string | null,
 	): Promise<Match> {
 		const match = await this.matchRepository.getMatchById(id);
 		if (!match) {
@@ -184,6 +187,15 @@ export class MatchUseCases {
 		}
 		if (presentPlayerIds !== undefined) {
 			match.presentPlayerIds = presentPlayerIds;
+		}
+		if (timerElapsedSeconds !== undefined) {
+			match.timerElapsedSeconds = timerElapsedSeconds;
+		}
+		if (timerRunning !== undefined) {
+			match.timerRunning = timerRunning;
+		}
+		if (timerStartedAt !== undefined) {
+			match.timerStartedAt = timerStartedAt;
 		}
 
 		await this.matchRepository.updateMatch(match);

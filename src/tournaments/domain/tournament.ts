@@ -7,4 +7,5 @@ export interface Tournament {
 	location: string;
 	teamIds: string[];
 	ownerId?: string;
+	matchDurationMinutes?: number;
 }

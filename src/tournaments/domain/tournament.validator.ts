@@ -9,4 +9,5 @@ export const createTournamentSchema = z.object({
 	endDate: z
 		.string()
 		.regex(/^\d{4}-\d{2}-\d{2}$/, { message: "End date must be in YYYY-MM-DD format" }),
+	matchDurationMinutes: z.number().int().min(1).max(600).optional(),
 });

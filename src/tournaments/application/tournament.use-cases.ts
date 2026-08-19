@@ -64,6 +64,7 @@ export class TournamentUseCases {
 		endDate: Date,
 		ownerId: string,
 		location?: string,
+		matchDurationMinutes?: number,
 	): Promise<Tournament> {
 		if (endDate < startDate) {
 			throw new Error("End date must be after start date");
@@ -78,6 +79,7 @@ export class TournamentUseCases {
 			location: location ?? "",
 			teamIds: [],
 			ownerId,
+			matchDurationMinutes,
 		};
 		await this.tournamentRepository.save(newTournament);
 
@@ -100,6 +102,7 @@ export class TournamentUseCases {
 		requesterId: string,
 		requesterRole: string,
 		location?: string,
+		matchDurationMinutes?: number,
 	): Promise<Tournament> {
 		if (endDate < startDate) {
 			throw new Error("End date must be after start date");
@@ -120,6 +123,9 @@ export class TournamentUseCases {
 		tournament.startDate = startDate;
 		tournament.endDate = endDate;
 		tournament.location = location ?? tournament.location;
+		if (matchDurationMinutes !== undefined) {
+			tournament.matchDurationMinutes = matchDurationMinutes;
+		}
 
 		await this.tournamentRepository.update(tournament);
 

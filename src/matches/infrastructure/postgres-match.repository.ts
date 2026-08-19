@@ -21,6 +21,9 @@ function toMatch(row: any): Match {
 		incidents: row.incidents ?? [],
 		notes: row.notes,
 		presentPlayerIds: row.present_player_ids ?? [],
+		timerElapsedSeconds: row.timer_elapsed_seconds ?? 0,
+		timerRunning: row.timer_running ?? false,
+		timerStartedAt: row.timer_started_at ?? null,
 	};
 }
 
@@ -29,8 +32,8 @@ export class PostgresMatchRepository implements MatchRepository {
 
 	async createMatch(match: Match): Promise<Match> {
 		await this.pool.query(
-			`INSERT INTO matches (id, tournament_id, round_id, team_a_id, team_b_id, referee_id, score_a, score_b, status, date, place_id, incidents, notes, present_player_ids)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13, $14::jsonb)
+			`INSERT INTO matches (id, tournament_id, round_id, team_a_id, team_b_id, referee_id, score_a, score_b, status, date, place_id, incidents, notes, present_player_ids, timer_elapsed_seconds, timer_running, timer_started_at)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12::jsonb, $13, $14::jsonb, $15, $16, $17)
        ON CONFLICT (id) DO NOTHING`,
 			[
 				match.id,
@@ -47,6 +50,9 @@ export class PostgresMatchRepository implements MatchRepository {
 				JSON.stringify(match.incidents),
 				match.notes,
 				JSON.stringify(match.presentPlayerIds ?? []),
+				match.timerElapsedSeconds ?? 0,
+				match.timerRunning ?? false,
+				match.timerStartedAt ?? null,
 			],
 		);
 
@@ -102,7 +108,8 @@ export class PostgresMatchRepository implements MatchRepository {
          tournament_id = $2, round_id = $3, team_a_id = $4, team_b_id = $5,
          referee_id = $6, score_a = $7, score_b = $8, status = $9,
          date = $10, place_id = $11, incidents = $12::jsonb, notes = $13,
-         present_player_ids = $14::jsonb
+         present_player_ids = $14::jsonb,
+         timer_elapsed_seconds = $15, timer_running = $16, timer_started_at = $17
        WHERE id = $1`,
 			[
 				match.id,
@@ -119,6 +126,9 @@ export class PostgresMatchRepository implements MatchRepository {
 				JSON.stringify(match.incidents),
 				match.notes,
 				JSON.stringify(match.presentPlayerIds ?? []),
+				match.timerElapsedSeconds ?? 0,
+				match.timerRunning ?? false,
+				match.timerStartedAt ?? null,
 			],
 		);
 	}

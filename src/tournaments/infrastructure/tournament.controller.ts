@@ -50,13 +50,15 @@ export class TournamentController {
 
 				return;
 			}
-			const { name, location, startDate, endDate } = createTournamentSchema.parse(req.body);
+			const { name, location, startDate, endDate, matchDurationMinutes } =
+				createTournamentSchema.parse(req.body);
 			const newTournament = await this.tournamentUseCases.createTournament(
 				name,
 				new Date(startDate),
 				new Date(endDate),
 				user.id,
 				location,
+				matchDurationMinutes,
 			);
 			res.status(201).json(newTournament);
 		} catch (error: unknown) {
@@ -105,7 +107,8 @@ export class TournamentController {
 				return;
 			}
 			const { id } = req.params;
-			const { name, location, startDate, endDate } = createTournamentSchema.parse(req.body);
+			const { name, location, startDate, endDate, matchDurationMinutes } =
+				createTournamentSchema.parse(req.body);
 			const updatedTournament = await this.tournamentUseCases.updateTournament(
 				id,
 				name,
@@ -114,6 +117,7 @@ export class TournamentController {
 				user.id,
 				user.role,
 				location,
+				matchDurationMinutes,
 			);
 			res.json(updatedTournament);
 		} catch (error: unknown) {
