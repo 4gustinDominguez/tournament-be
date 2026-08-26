@@ -164,4 +164,20 @@ async function runMigrations(p: Pool): Promise<void> {
 		END
 		$$;
 	`);
+	await p.query(`
+		DO $$
+		BEGIN
+			IF NOT EXISTS (
+				SELECT 1 FROM information_schema.columns WHERE table_name = 'places' AND column_name = 'latitude'
+			) THEN
+				ALTER TABLE places ADD COLUMN latitude DOUBLE PRECISION;
+			END IF;
+			IF NOT EXISTS (
+				SELECT 1 FROM information_schema.columns WHERE table_name = 'places' AND column_name = 'longitude'
+			) THEN
+				ALTER TABLE places ADD COLUMN longitude DOUBLE PRECISION;
+			END IF;
+		END
+		$$;
+	`);
 }
