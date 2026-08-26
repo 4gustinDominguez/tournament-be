@@ -17,6 +17,8 @@ export class PlaceUseCases {
 		requesterRole: string,
 		location?: string,
 		capacity?: number,
+		latitude?: number,
+		longitude?: number,
 	): Promise<Place> {
 		if (this.tournamentUseCases) {
 			await this.tournamentUseCases.verifyTournamentOwnership(
@@ -31,10 +33,48 @@ export class PlaceUseCases {
 			tournamentId,
 			location,
 			capacity,
+			latitude,
+			longitude,
 		};
 		await this.placeRepository.save(newPlace);
 
 		return newPlace;
+	}
+
+	async updatePlace(
+		id: string,
+		requesterId: string,
+		requesterRole: string,
+		updates: {
+			name?: string;
+			location?: string;
+			capacity?: number;
+			latitude?: number;
+			longitude?: number;
+		},
+	): Promise<Place> {
+		const existing = await this.placeRepository.findById(id);
+		if (!existing) {
+			throw new Error("Place not found");
+		}
+
+		if (this.tournamentUseCases) {
+			await this.tournamentUseCases.verifyTournamentOwnership(
+				existing.tournamentId,
+				requesterId,
+				requesterRole,
+			);
+		}
+
+		const updated: Place = {
+			...existing,
+			...Object.fromEntries(
+				(Object.entries(updates) as [string, unknown][]).filter(([, v]) => v !== undefined),
+			),
+		};
+		await this.placeRepository.save(updated);
+
+		return updated;
 	}
 
 	async getAllPlaces(tournamentId?: string): Promise<Place[]> {

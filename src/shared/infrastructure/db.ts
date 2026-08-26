@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS places (
   name TEXT NOT NULL,
   tournament_id TEXT NOT NULL,
   location TEXT,
-  capacity INTEGER
+  capacity INTEGER,
+  latitude DOUBLE PRECISION,
+  longitude DOUBLE PRECISION
 );
 
 CREATE TABLE IF NOT EXISTS referees (

@@ -5,5 +5,7 @@ export class Place {
 		public readonly tournamentId: string,
 		public readonly location?: string,
 		public readonly capacity?: number,
+		public readonly latitude?: number,
+		public readonly longitude?: number,
 	) {}
 }

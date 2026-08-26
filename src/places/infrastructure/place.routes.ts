@@ -23,6 +23,12 @@ router.post(
 	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
 	placeController.createPlace.bind(placeController),
 );
+router.put(
+	"/places/:id",
+	isAuthenticated,
+	hasRole([UserRole.SUPER_ADMIN, UserRole.TOURNAMENT_ADMIN]),
+	placeController.updatePlace.bind(placeController),
+);
 router.delete(
 	"/places/:id",
 	isAuthenticated,

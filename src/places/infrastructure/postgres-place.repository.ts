@@ -8,21 +8,34 @@ export class PostgresPlaceRepository implements PlaceRepository {
 
 	async save(place: Place): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO places (id, name, tournament_id, location, capacity)
-       VALUES ($1, $2, $3, $4, $5)
+			`INSERT INTO places (id, name, tournament_id, location, capacity, latitude, longitude)
+       VALUES ($1, $2, $3, $4, $5, $6, $7)
        ON CONFLICT (id) DO UPDATE SET
          name = EXCLUDED.name,
          tournament_id = EXCLUDED.tournament_id,
          location = EXCLUDED.location,
-         capacity = EXCLUDED.capacity`,
-			[place.id, place.name, place.tournamentId, place.location, place.capacity],
+         capacity = EXCLUDED.capacity,
+         latitude = EXCLUDED.latitude,
+         longitude = EXCLUDED.longitude`,
+			[
+				place.id,
+				place.name,
+				place.tournamentId,
+				place.location,
+				place.capacity,
+				place.latitude,
+				place.longitude,
+			],
 		);
 	}
 
 	async findAll(): Promise<Place[]> {
 		const { rows } = await this.pool.query("SELECT * FROM places");
 
-		return rows.map((r) => new Place(r.id, r.name, r.tournament_id, r.location, r.capacity));
+		return rows.map(
+			(r) =>
+				new Place(r.id, r.name, r.tournament_id, r.location, r.capacity, r.latitude, r.longitude),
+		);
 	}
 
 	async findById(id: string): Promise<Place | null> {
@@ -35,6 +48,8 @@ export class PostgresPlaceRepository implements PlaceRepository {
 					rows[0].tournament_id,
 					rows[0].location,
 					rows[0].capacity,
+					rows[0].latitude,
+					rows[0].longitude,
 				)
 			: null;
 	}
