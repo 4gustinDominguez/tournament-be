@@ -1,22 +1,33 @@
 {
   "name": "t-form-api",
   "version": "1.0.0",
+  "description": "Tournament management REST API with hexagonal architecture, pragmatic DDD and BDD acceptance tests",
+  "author": "4gustinDominguez",
+  "license": "ISC",
+  "keywords": [
+    "tournament",
+    "express",
+    "typescript",
+    "hexagonal-architecture",
+    "ddd",
+    "bdd",
+    "cucumber",
+    "postgresql",
+    "rest-api"
+  ],
   "scripts": {
     "dev": "nodemon src/index.ts",
     "build": "rimraf dist && tsc && tsc-alias",
     "start": "node dist/index.js",
     "seed": "node dist/seed.js",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit -p tsconfig.lint.json",
     "test": "cucumber-js",
     "prepare": "husky || true"
   },
-  "author": "",
-  "license": "ISC",
-  "keywords": [],
   "engines": {
     "node": ">=22.0.0"
   },
-  "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cloudinary": "^2.10.0",
