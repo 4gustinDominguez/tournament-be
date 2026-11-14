@@ -22,7 +22,7 @@ export default [
 		},
 	},
 	{
-		files: ["src/scenarios/**/*.ts", "src/seed.ts"],
+		files: ["src/seed.ts"],
 		rules: {
 			"no-console": "off",
 		},

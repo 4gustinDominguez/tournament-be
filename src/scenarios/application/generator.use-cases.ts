@@ -34,8 +34,6 @@ export class GeneratorUseCases {
 		ownerId: string,
 		ownerRole: string,
 	): Promise<Tournament> {
-		console.log("Starting tournament generation with mode:", params.mode ?? "random", params);
-
 		// 1. Create Tournament
 		const tournament = await this.tournamentUseCases.createTournament(
 			params.tournamentName,
@@ -43,13 +41,11 @@ export class GeneratorUseCases {
 			params.endDate,
 			ownerId,
 		);
-		console.log("Tournament created:", tournament.id);
 
 		// 2. Create Teams
 		const teamIds: string[] = [];
 		for (let i = 0; i < params.teamsCount; i++) {
 			const teamName = params.mode === "guided" ? `Team ${i + 1}` : this.getTeamName();
-			console.log(`Creating team ${i + 1}/${params.teamsCount}: ${teamName}`);
 			const team = await this.teamUseCases.createTeam(
 				teamName,
 				[],
@@ -71,11 +67,9 @@ export class GeneratorUseCases {
 							this.getRandomPosition(),
 						);
 					}
-					console.log(`  Team ${team.name} created with ${params.playersPerTeam} players`);
 				}
 			}
 		}
-		console.log(`${teamIds.length} teams created`);
 
 		// 3. Create Places (random mode only)
 		const places: { id: string }[] = [];
@@ -91,7 +85,6 @@ export class GeneratorUseCases {
 				);
 				places.push(place);
 			}
-			console.log(`${places.length} places created`);
 
 			// 4. Create Referees
 			for (let i = 0; i < params.refereesCount; i++) {
@@ -102,17 +95,13 @@ export class GeneratorUseCases {
 					ownerRole,
 				);
 			}
-			console.log(`${params.refereesCount} referees created`);
 		}
 
 		// 5. Generate Fixtures (random mode only)
 		if (params.mode !== "guided") {
-			console.log("Generating fixtures...");
 			await this.fixtureUseCases.generateRoundRobin(tournament.id, ownerId, ownerRole);
-			console.log("Fixtures generated");
 
 			// 6. Smart Assignment: Assign Places and Referees to matches
-			console.log("Assigning places and referees to matches...");
 			const matches = await this.matchUseCases.getMatchesByTournament(tournament.id);
 			const referees = await this.refereeUseCases.getRefereesByTournament(tournament.id);
 			for (let i = 0; i < matches.length; i++) {
@@ -133,7 +122,6 @@ export class GeneratorUseCases {
 					);
 				}
 			}
-			console.log("Assignments complete");
 		}
 
 		return tournament;

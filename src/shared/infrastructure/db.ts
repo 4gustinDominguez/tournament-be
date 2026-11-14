@@ -120,7 +120,7 @@ function resolveSsl(connectionString: string): { rejectUnauthorized: false } | u
 			return { rejectUnauthorized: false };
 		}
 	} catch {
-		// URL mal formada: se ignora y se conecta sin SSL
+		// Malformed URL: ignore it and connect without SSL
 	}
 
 	return undefined;
