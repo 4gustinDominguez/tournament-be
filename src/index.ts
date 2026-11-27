@@ -1,3 +1,6 @@
+// Loads .env before any module reads process.env (no-op if the file is missing)
+import "dotenv/config";
+
 import cors from "cors";
 import express, { Express, Request, Response } from "express";
 import helmet from "helmet";
