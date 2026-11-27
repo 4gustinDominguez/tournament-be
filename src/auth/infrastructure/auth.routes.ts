@@ -18,6 +18,9 @@ const userRepository = repositories.user;
 let emailService: EmailService | null = null;
 if (process.env.MJ_APIKEY_PUBLIC && process.env.MJ_APIKEY_PRIVATE) {
 	emailService = new MailjetEmailService();
+	console.log("[mailjet] email service enabled");
+} else {
+	console.log("[mailjet] MJ_APIKEY_PUBLIC/MJ_APIKEY_PRIVATE not set, emails disabled");
 }
 
 // Use Cases
