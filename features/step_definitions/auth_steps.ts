@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { expect } from "chai";
 
 import { AuthUseCases } from "../../src/auth/application/auth.use-cases";
-import { User } from "../../src/auth/domain/user";
+import { User, UserRole } from "../../src/auth/domain/user";
 import { UserRepository } from "../../src/auth/domain/user.repository";
 import { repositories } from "./test-repositories";
 
@@ -29,6 +29,40 @@ Given(
 	async function (email: string, password: string, firstName: string, lastName: string) {
 		await authUseCases.register({ email, password, firstName, lastName });
 		registeredUser = await userRepository.findByEmail(email);
+	},
+);
+
+When(
+	"I register a public account {string} with role {string}",
+	async function (email: string, role: string) {
+		try {
+			await authUseCases.register({
+				email,
+				password: "secret123",
+				firstName: "Public",
+				lastName: "User",
+				role: role as UserRole,
+			});
+		} catch (error: any) {
+			lastError = error;
+		}
+	},
+);
+
+Then("registration should be rejected with {string}", function (message: string) {
+	expect(lastError?.message).to.equal(message);
+});
+
+Then("no account should exist for {string}", async function (email: string) {
+	expect(await userRepository.findByEmail(email)).to.be.null;
+});
+
+Then(
+	"a public account should be created for {string} with role {string}",
+	async function (email: string, role: string) {
+		const user = await userRepository.findByEmail(email);
+		expect(user).to.not.be.null;
+		expect(user?.role).to.equal(role);
 	},
 );
 

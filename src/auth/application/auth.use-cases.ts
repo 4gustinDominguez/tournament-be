@@ -21,6 +21,8 @@ interface LoginResponse {
 
 type EmailLocale = "en" | "es";
 
+const publicRegistrationRoles = [UserRole.TOURNAMENT_ADMIN, UserRole.REFEREE, UserRole.PLAYER];
+
 function normalizeLocale(locale?: string): EmailLocale {
 	return locale === "en" ? "en" : "es";
 }
@@ -42,6 +44,11 @@ export class AuthUseCases {
 		role?: UserRole;
 		locale?: string;
 	}): Promise<Omit<User, "passwordHash">> {
+		const role = userData.role ?? UserRole.PLAYER;
+		if (!publicRegistrationRoles.includes(role)) {
+			throw new Error("Invalid role for public registration");
+		}
+
 		const existingUser = await this.userRepository.findByEmail(userData.email);
 		if (existingUser) {
 			throw new Error("User already exists");
@@ -56,7 +63,7 @@ export class AuthUseCases {
 			passwordHash,
 			firstName: userData.firstName,
 			lastName: userData.lastName,
-			role: userData.role ?? UserRole.PLAYER,
+			role,
 			plan: "free",
 			ownedTournaments: [],
 			verificationToken,

@@ -1,5 +1,14 @@
 Feature: Auth profile
 
+  Scenario: Reject public registration as super admin
+    When I register a public account "admin@example.com" with role "SUPER_ADMIN"
+    Then registration should be rejected with "Invalid role for public registration"
+    And no account should exist for "admin@example.com"
+
+  Scenario: Allow public registration as tournament admin
+    When I register a public account "organizer@example.com" with role "TOURNAMENT_ADMIN"
+    Then a public account should be created for "organizer@example.com" with role "TOURNAMENT_ADMIN"
+
   Scenario: Update profile name
     Given a registered user "user@example.com" with password "secret123" named "Jane" "Doe"
     When I update the profile name to "Janet" and "Smith"

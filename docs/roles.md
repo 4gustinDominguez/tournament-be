@@ -33,3 +33,28 @@ System roles and their capabilities. RBAC is implemented in the backend (`src/au
 2. **Referee**: can only modify matches where they are assigned as `refereeId`.
 3. **Public**: read-only access to the tournament landing; never sees admin actions or dashboard links.
 4. **Super Admin**: full access as system fallback/administration.
+
+## Assigning the initial Super Admin
+
+Public registration accepts `TOURNAMENT_ADMIN`, `REFEREE`, and `PLAYER`. It rejects
+`SUPER_ADMIN`; a role sent by the client is never sufficient to grant system-wide access.
+
+To promote the initial platform owner, first create an account normally and verify its email.
+Then run this query in the trusted database SQL editor, replacing the example address:
+
+```sql
+SELECT id, email, role, email_verified
+FROM users
+WHERE email = 'owner@example.com';
+
+UPDATE users
+SET role = 'SUPER_ADMIN'
+WHERE email = 'owner@example.com'
+  AND email_verified = true
+RETURNING id, email, role;
+```
+
+Check that the update returns exactly one row with the expected account and role. If it returns
+no rows, confirm that the address exists and its email is verified. After promotion, sign out and
+sign in again so the new role is included in the JWT. Database access for this operation must
+remain restricted to trusted operators; do not expose it through public registration.
