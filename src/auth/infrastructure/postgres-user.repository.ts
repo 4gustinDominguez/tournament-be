@@ -4,6 +4,11 @@ import { User } from "../domain/user";
 import { UserRepository } from "../domain/user.repository";
 
 function toUser(row: any): User {
+	const resetTokenExpiry =
+		row.reset_token_expiry === null || row.reset_token_expiry === undefined
+			? undefined
+			: Number(row.reset_token_expiry); // pg returns BIGINT as string
+
 	return {
 		id: row.id,
 		email: row.email,
@@ -13,6 +18,10 @@ function toUser(row: any): User {
 		lastName: row.last_name,
 		plan: row.plan,
 		ownedTournaments: row.owned_tournaments ?? [],
+		resetToken: row.reset_token ?? undefined,
+		resetTokenExpiry,
+		verificationToken: row.verification_token ?? undefined,
+		emailVerified: row.email_verified ?? false,
 	};
 }
 
@@ -21,8 +30,8 @@ export class PostgresUserRepository implements UserRepository {
 
 	async save(user: User): Promise<void> {
 		await this.pool.query(
-			`INSERT INTO users (id, email, password_hash, role, first_name, last_name, plan, owned_tournaments)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+			`INSERT INTO users (id, email, password_hash, role, first_name, last_name, plan, owned_tournaments, reset_token, reset_token_expiry, verification_token, email_verified)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
        ON CONFLICT (id) DO NOTHING`,
 			[
 				user.id,
@@ -33,6 +42,10 @@ export class PostgresUserRepository implements UserRepository {
 				user.lastName,
 				user.plan,
 				user.ownedTournaments,
+				user.resetToken ?? null,
+				user.resetTokenExpiry ?? null,
+				user.verificationToken ?? null,
+				user.emailVerified ?? false,
 			],
 		);
 	}
@@ -49,6 +62,20 @@ export class PostgresUserRepository implements UserRepository {
 		return rows[0] ? toUser(rows[0]) : null;
 	}
 
+	async findByResetToken(token: string): Promise<User | null> {
+		const { rows } = await this.pool.query("SELECT * FROM users WHERE reset_token = $1", [token]);
+
+		return rows[0] ? toUser(rows[0]) : null;
+	}
+
+	async findByVerificationToken(token: string): Promise<User | null> {
+		const { rows } = await this.pool.query("SELECT * FROM users WHERE verification_token = $1", [
+			token,
+		]);
+
+		return rows[0] ? toUser(rows[0]) : null;
+	}
+
 	async getAll(): Promise<User[]> {
 		const { rows } = await this.pool.query("SELECT * FROM users");
 
@@ -59,7 +86,9 @@ export class PostgresUserRepository implements UserRepository {
 		await this.pool.query(
 			`UPDATE users SET
          email = $2, password_hash = $3, role = $4, first_name = $5,
-         last_name = $6, plan = $7, owned_tournaments = $8
+         last_name = $6, plan = $7, owned_tournaments = $8,
+         reset_token = $9, reset_token_expiry = $10,
+         verification_token = $11, email_verified = $12
        WHERE id = $1`,
 			[
 				user.id,
@@ -70,6 +99,10 @@ export class PostgresUserRepository implements UserRepository {
 				user.lastName,
 				user.plan,
 				user.ownedTournaments,
+				user.resetToken ?? null,
+				user.resetTokenExpiry ?? null,
+				user.verificationToken ?? null,
+				user.emailVerified ?? false,
 			],
 		);
 	}

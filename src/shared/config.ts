@@ -11,3 +11,7 @@ export function getJwtSecret(): string {
 
 	return "dev-secret-not-for-production";
 }
+
+export function getFrontendUrl(): string {
+	return process.env.FRONTEND_URL ?? "http://localhost:3001";
+}

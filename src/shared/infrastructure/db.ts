@@ -180,4 +180,10 @@ async function runMigrations(p: Pool): Promise<void> {
 		END
 		$$;
 	`);
+	await p.query(`
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token TEXT;
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS reset_token_expiry BIGINT;
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS verification_token TEXT;
+		ALTER TABLE users ADD COLUMN IF NOT EXISTS email_verified BOOLEAN NOT NULL DEFAULT false;
+	`);
 }

@@ -15,5 +15,9 @@ export interface User {
 	firstName: string;
 	lastName: string;
 	plan: UserPlan;
-	ownedTournaments: string[]; // IDs of tournaments managed by this user
+	ownedTournaments: string[];
+	resetToken?: string;
+	resetTokenExpiry?: number;
+	verificationToken?: string;
+	emailVerified?: boolean;
 }

@@ -35,6 +35,18 @@ export class FileUserRepository implements UserRepository {
 		return users.find((u) => u.id === id) ?? null;
 	}
 
+	async findByResetToken(token: string): Promise<User | null> {
+		const users = await this.getAll();
+
+		return users.find((u) => u.resetToken === token) ?? null;
+	}
+
+	async findByVerificationToken(token: string): Promise<User | null> {
+		const users = await this.getAll();
+
+		return users.find((u) => u.verificationToken === token) ?? null;
+	}
+
 	async getAll(): Promise<User[]> {
 		await this.ensureFile();
 		const data = await fs.readFile(this.filePath, "utf-8");

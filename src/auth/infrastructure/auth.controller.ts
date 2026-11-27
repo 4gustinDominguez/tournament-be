@@ -59,14 +59,60 @@ export class AuthController {
 
 				return;
 			}
-			const { firstName, lastName, currentPassword, newPassword } = req.body;
+			const { firstName, lastName, currentPassword, newPassword, locale } = req.body;
 			const result = await this.authUseCases.updateProfile(user.id, {
 				firstName,
 				lastName,
 				currentPassword,
 				newPassword,
+				locale,
 			});
 			res.status(200).json(result);
+		} catch (error: unknown) {
+			res.status(400).json({ message: error instanceof Error ? error.message : String(error) });
+		}
+	}
+
+	async forgotPassword(req: Request, res: Response): Promise<void> {
+		try {
+			const { email, locale } = req.body;
+			if (!email) {
+				res.status(400).json({ message: "Email is required" });
+
+				return;
+			}
+			await this.authUseCases.forgotPassword(email, locale);
+			res.status(200).json({ message: "If the email exists, a reset link has been sent" });
+		} catch (error: unknown) {
+			res.status(500).json({ message: error instanceof Error ? error.message : String(error) });
+		}
+	}
+
+	async resetPassword(req: Request, res: Response): Promise<void> {
+		try {
+			const { token, newPassword } = req.body;
+			if (!token || !newPassword) {
+				res.status(400).json({ message: "Token and newPassword are required" });
+
+				return;
+			}
+			await this.authUseCases.resetPassword(token, newPassword);
+			res.status(200).json({ message: "Password reset successfully" });
+		} catch (error: unknown) {
+			res.status(400).json({ message: error instanceof Error ? error.message : String(error) });
+		}
+	}
+
+	async verifyEmail(req: Request, res: Response): Promise<void> {
+		try {
+			const { token } = req.body;
+			if (!token) {
+				res.status(400).json({ message: "Token is required" });
+
+				return;
+			}
+			await this.authUseCases.verifyEmail(token);
+			res.status(200).json({ message: "Email verified successfully" });
 		} catch (error: unknown) {
 			res.status(400).json({ message: error instanceof Error ? error.message : String(error) });
 		}

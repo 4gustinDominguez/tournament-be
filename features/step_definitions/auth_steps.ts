@@ -12,6 +12,7 @@ let userRepository: UserRepository;
 let registeredUser: User | null = null;
 let updatedProfile: any = null;
 let lastError: Error | null = null;
+let storedToken: string | null = null;
 
 Before(async function () {
 	userRepository = repositories.user;
@@ -20,6 +21,7 @@ Before(async function () {
 	registeredUser = null;
 	updatedProfile = null;
 	lastError = null;
+	storedToken = null;
 });
 
 Given(
@@ -91,4 +93,105 @@ Then("the profile should have the new password {string}", async function (passwo
 Then("I should receive a profile error saying {string}", function (message: string) {
 	expect(lastError).to.not.be.null;
 	expect(lastError?.message).to.equal(message);
+});
+
+When("I request a password reset for {string}", async function (email: string) {
+	await authUseCases.forgotPassword(email);
+});
+
+Then("no reset token should be stored for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	expect(user?.resetToken).to.be.undefined;
+});
+
+Then("a reset token should be stored for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	expect(user?.resetToken).to.be.a("string");
+	storedToken = user?.resetToken ?? null;
+});
+
+Given("a reset token for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	if (!user) {
+		throw new Error("User not found");
+	}
+	user.resetToken = "valid-token";
+	user.resetTokenExpiry = Date.now() + 3600000;
+	await userRepository.update(user);
+	storedToken = "valid-token";
+});
+
+Given("an expired reset token for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	if (!user) {
+		throw new Error("User not found");
+	}
+	user.resetToken = "expired-token";
+	user.resetTokenExpiry = Date.now() - 1000;
+	await userRepository.update(user);
+	storedToken = "expired-token";
+});
+
+When(
+	"I try to reset the password with token {string} to {string}",
+	async function (token: string, password: string) {
+		try {
+			await authUseCases.resetPassword(token, password);
+		} catch (error: any) {
+			lastError = error;
+		}
+	},
+);
+
+When(
+	"I try to reset the password with the stored token to {string}",
+	async function (password: string) {
+		try {
+			await authUseCases.resetPassword(storedToken ?? "", password);
+		} catch (error: any) {
+			lastError = error;
+		}
+	},
+);
+
+When("I reset the password with the stored token to {string}", async function (password: string) {
+	await authUseCases.resetPassword(storedToken ?? "", password);
+});
+
+Then("I should receive a reset error saying {string}", function (message: string) {
+	expect(lastError).to.not.be.null;
+	expect(lastError?.message).to.equal(message);
+});
+
+Given("a verification token for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	expect(user?.verificationToken).to.be.a("string");
+	storedToken = user?.verificationToken ?? null;
+});
+
+When("I try to verify the email with token {string}", async function (token: string) {
+	try {
+		await authUseCases.verifyEmail(token);
+	} catch (error: any) {
+		lastError = error;
+	}
+});
+
+When("I verify the email with the stored token", async function () {
+	await authUseCases.verifyEmail(storedToken ?? "");
+});
+
+Then("I should receive a verify error saying {string}", function (message: string) {
+	expect(lastError).to.not.be.null;
+	expect(lastError?.message).to.equal(message);
+});
+
+Then("the email should be verified for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	expect(user?.emailVerified).to.be.true;
+});
+
+Then("no verification token should be stored for {string}", async function (email: string) {
+	const user = await userRepository.findByEmail(email);
+	expect(user?.verificationToken).to.be.undefined;
 });
