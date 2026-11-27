@@ -28,11 +28,7 @@ export default [
 		},
 	},
 	{
-		files: [
-			"src/index.ts",
-			"src/auth/infrastructure/auth.routes.ts",
-			"src/shared/infrastructure/mailjet-email.service.ts",
-		],
+		files: ["src/index.ts"],
 		rules: {
 			"no-console": ["error", { allow: ["error", "log"] }],
 		},

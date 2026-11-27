@@ -103,9 +103,8 @@ export class AuthUseCases {
 					html: verification.html,
 					locale,
 				});
-			} catch (error) {
+			} catch {
 				// Email sending should not block registration
-				console.error("Failed to send registration emails:", error);
 			}
 		}
 
@@ -197,9 +196,8 @@ export class AuthUseCases {
 					html: email.html,
 					locale,
 				});
-			} catch (error) {
+			} catch {
 				// Email sending should not block profile update
-				console.error("Failed to send password changed email:", error);
 			}
 		}
 
@@ -237,9 +235,8 @@ export class AuthUseCases {
 					html: reset.html,
 					locale: emailLocale,
 				});
-			} catch (error) {
+			} catch {
 				// Email sending should not block the flow
-				console.error("Failed to send reset password email:", error);
 			}
 		}
 	}

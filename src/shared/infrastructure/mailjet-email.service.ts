@@ -21,49 +21,18 @@ export class MailjetEmailService implements EmailService {
 	}
 
 	async send(params: SendEmailParams): Promise<void> {
-		const recipient = maskEmail(params.to);
-
-		try {
-			const { body } = await this.client.post("send", { version: "v3.1" }).request({
-				Messages: [
-					{
-						From: {
-							Email: this.fromEmail,
-							Name: this.fromName,
-						},
-						To: [{ Email: params.to }],
-						Subject: params.subject,
-						HTMLPart: params.html,
+		await this.client.post("send", { version: "v3.1" }).request({
+			Messages: [
+				{
+					From: {
+						Email: this.fromEmail,
+						Name: this.fromName,
 					},
-				],
-			});
-
-			const response = body as unknown as MailjetSendResponse;
-			const messageId = response.Messages?.[0]?.To?.[0]?.MessageID;
-			console.log(`[mailjet] sent "${params.subject}" to ${recipient} messageId=${messageId}`);
-		} catch (error: unknown) {
-			const details = error as MailjetError;
-			console.error(
-				`[mailjet] failed to send "${params.subject}" to ${recipient}: status=${details.statusCode} ${details.message}`,
-				details.response?.body ?? "",
-			);
-			throw error;
-		}
+					To: [{ Email: params.to }],
+					Subject: params.subject,
+					HTMLPart: params.html,
+				},
+			],
+		});
 	}
-}
-
-interface MailjetSendResponse {
-	Messages?: { To?: { MessageID?: number | string }[] }[];
-}
-
-interface MailjetError {
-	statusCode?: number;
-	message?: string;
-	response?: { body?: unknown };
-}
-
-function maskEmail(email: string): string {
-	const [localPart, domain] = email.split("@");
-
-	return `${localPart.slice(0, 2)}***@${domain}`;
 }
